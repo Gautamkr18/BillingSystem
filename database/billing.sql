@@ -1,5 +1,4 @@
-CREATE DATABASE billing_system;
-USE billing_system;
+
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
