@@ -6,20 +6,20 @@ include '../includes/header.php';
 
 // Handle Add User
 if (isset($_POST['add_user'])) {
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $username = db_real_escape_string($conn, $_POST['username']);
     $password = MD5($_POST['password']);
-    $role = mysqli_real_escape_string($conn, $_POST['role']);
+    $role = db_real_escape_string($conn, $_POST['role']);
 
     // Check if user exists
-    $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
-    if (mysqli_num_rows($check) > 0) {
+    $check = db_query($conn, "SELECT * FROM users WHERE username='$username'");
+    if (db_num_rows($check) > 0) {
         echo "<script>alert('Error: Username already exists.');</script>";
     } else {
-        mysqli_query($conn, "INSERT INTO users (username, password, role) VALUES ('$username', '$password', '$role')");
+        db_query($conn, "INSERT INTO users (username, password, role) VALUES ('$username', '$password', '$role')");
         // Log activity
         $admin_name = $_SESSION['username'];
         $admin_id = $_SESSION['user_id'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Add Staff', 'Added new user $username with role $role')");
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Add Staff', 'Added new user $username with role $role')");
         echo "<script>alert('User Added Successfully'); window.location='users.php';</script>";
     }
 }
@@ -27,18 +27,18 @@ if (isset($_POST['add_user'])) {
 // Handle Delete User
 if (isset($_POST['delete_user'])) {
     $del_id = $_POST['delete_id'];
-    $u_res = mysqli_query($conn, "SELECT username FROM users WHERE id='$del_id'");
-    $u_data = mysqli_fetch_assoc($u_res);
+    $u_res = db_query($conn, "SELECT username FROM users WHERE id='$del_id'");
+    $u_data = db_fetch_assoc($u_res);
     $username = $u_data['username'];
 
     if ($username == $_SESSION['username']) {
         echo "<script>alert('Error: You cannot delete your own account!');</script>";
     } else {
-        mysqli_query($conn, "DELETE FROM users WHERE id='$del_id'");
+        db_query($conn, "DELETE FROM users WHERE id='$del_id'");
         // Log activity
         $admin_name = $_SESSION['username'];
         $admin_id = $_SESSION['user_id'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Delete Staff', 'Deleted user account $username')");
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Delete Staff', 'Deleted user account $username')");
         echo "<script>alert('User Deleted Successfully'); window.location='users.php';</script>";
     }
 }
@@ -46,27 +46,27 @@ if (isset($_POST['delete_user'])) {
 // Handle Role Change
 if (isset($_POST['update_role'])) {
     $user_id = $_POST['user_id'];
-    $role = mysqli_real_escape_string($conn, $_POST['role']);
+    $role = db_real_escape_string($conn, $_POST['role']);
     
-    $u_res = mysqli_query($conn, "SELECT username FROM users WHERE id='$user_id'");
-    $u_data = mysqli_fetch_assoc($u_res);
+    $u_res = db_query($conn, "SELECT username FROM users WHERE id='$user_id'");
+    $u_data = db_fetch_assoc($u_res);
     $username = $u_data['username'];
 
-    mysqli_query($conn, "UPDATE users SET role='$role' WHERE id='$user_id'");
+    db_query($conn, "UPDATE users SET role='$role' WHERE id='$user_id'");
     // Log activity
     $admin_name = $_SESSION['username'];
     $admin_id = $_SESSION['user_id'];
-    mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Update Staff Role', 'Changed role of $username to $role')");
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Update Staff Role', 'Changed role of $username to $role')");
     echo "<script>alert('Role Updated Successfully'); window.location='users.php';</script>";
 }
 
 // Handle Clear Logs
 if (isset($_POST['clear_logs'])) {
-    mysqli_query($conn, "TRUNCATE TABLE activity_logs");
+    db_query($conn, "TRUNCATE TABLE activity_logs");
     // Log the clear action itself
     $admin_name = $_SESSION['username'];
     $admin_id = $_SESSION['user_id'];
-    mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Clear Logs', 'Cleared all system activity logs')");
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Clear Logs', 'Cleared all system activity logs')");
     echo "<script>alert('Activity logs cleared successfully'); window.location='users.php';</script>";
     exit;
 }
@@ -114,8 +114,8 @@ if (isset($_POST['clear_logs'])) {
             </thead>
             <tbody>
                 <?php
-                $result = mysqli_query($conn, "SELECT * FROM users ORDER BY id DESC");
-                while ($row = mysqli_fetch_assoc($result)) {
+                $result = db_query($conn, "SELECT * FROM users ORDER BY id DESC");
+                while ($row = db_fetch_assoc($result)) {
                 ?>
                 <tr>
                     <td>#<?php echo $row['id']; ?></td>
@@ -176,11 +176,11 @@ if (isset($_POST['clear_logs'])) {
         </thead>
         <tbody>
             <?php
-            $logs = mysqli_query($conn, "SELECT * FROM activity_logs ORDER BY id DESC LIMIT 100");
-            if (mysqli_num_rows($logs) == 0) {
+            $logs = db_query($conn, "SELECT * FROM activity_logs ORDER BY id DESC LIMIT 100");
+            if (db_num_rows($logs) == 0) {
                 echo "<tr><td colspan='4' style='text-align:center; color:var(--text-muted);'>No activity logs available yet.</td></tr>";
             }
-            while ($log = mysqli_fetch_assoc($logs)) {
+            while ($log = db_fetch_assoc($logs)) {
             ?>
             <tr>
                 <td style="color: var(--text-muted); font-size: 0.9rem;"><?php echo date('d M Y h:i A', strtotime($log['timestamp'])); ?></td>
@@ -198,3 +198,4 @@ if (isset($_POST['clear_logs'])) {
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

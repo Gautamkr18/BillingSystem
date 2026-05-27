@@ -48,32 +48,24 @@ Clone this repository directly into your web root directory (e.g., `htdocs` for 
 git clone https://github.com/Gautamkr18/BillingSystem.git
 ```
 
-### 2. Configure Database Connection
-* Open `includes/db.php` in a text editor.
-* Configure your local MySQL database connection details:
-  ```php
-  $conn = mysqli_connect("localhost", "root", "", "billing_system");
-  ```
-
-### 3. Initialize & Migrate the Database
-We have included a convenient automatic migration system that creates all tables and upgrades schema dynamically.
-1. Start your **Apache** and **MySQL** services in XAMPP.
+### 2. Initialize & Migrate the Database
+We use a unified SQLite database which is completely serverless and requires zero database configuration or installation!
+1. Start your **Apache** service in XAMPP (no MySQL service is needed!).
 2. Open your web browser and navigate to:
    [http://localhost/billing-system/database/migrate.php](http://localhost/billing-system/database/migrate.php)
-3. You will see a progress report as the database and all its tables are automatically generated and configured.
-
+3. You will see a progress report as the SQLite database file (`database/billing_system.sqlite`) and all its tables are automatically generated, structured, and configured.
 
 ---
 
 ## ☁️ Deploying to Render
 
-This project is fully ready to be deployed on **Render** using standard Docker containers. You have two options for deployment:
+This project is fully ready to be deployed on **Render** using a single Docker Web Service. We use a serverless SQLite database, which is incredibly portable, performant, and simple.
 
-### Option A: Standard Blueprint Deployment (Recommended for Production)
-This uses Render's **Blueprints** (`render.yaml`) to automatically spin up both the PHP container and a private MySQL database container with a **1GB persistent disk** (so your database records are safely saved when the server restarts).
+### Option A: Standard Blueprint Deployment (Recommended)
+This uses Render's **Blueprints** (`render.yaml`) to automatically spin up your PHP container with a **1GB persistent disk** mounted at `/var/www/html/database` (so your database records are safely saved when the server restarts or sleeps).
 *Note: Render's persistent disks require a paid tier (starter instance).*
 
-1. Push your codebase to a GitHub, GitLab, or Bitbucket repository.
+1. Push your codebase to your GitHub, GitLab, or Bitbucket repository.
 2. Log in to your [Render Dashboard](https://dashboard.render.com).
 3. Click on the **Blueprints** tab on the sidebar.
 4. Click **New Blueprint Instance**.
@@ -81,34 +73,22 @@ This uses Render's **Blueprints** (`render.yaml`) to automatically spin up both 
 6. Render will automatically parse the `render.yaml` file. Click **Apply**.
 7. Once successfully deployed, navigate to the Web Service URL:
    `https://<your-app-name>.onrender.com/database/migrate.php`
-   This will automatically initialize and build all your MySQL tables in the private container!
+   This will automatically initialize your SQLite database inside the persistent disk!
 
 ---
 
 ### Option B: 100% Free Tier Deployment (No Credit Card Required)
-If you want to host this completely free, you can run the PHP app as a free Web Service on Render and connect it to a free external MySQL provider (e.g. [Aiven](https://aiven.io), [Clever Cloud](https://www.clever-cloud.com), or [Railway](https://railway.app)).
+If you want to host this completely free, you can deploy it as a free Web Service on Render without a persistent disk.
+*Note: The database file will reset back to the initial schema on every deploy or container restart.*
 
-1. **Set Up a Free Database:**
-   * Create a free MySQL database instance on Aiven, Clever Cloud, or Railway.
-   * Save the host, port, database name, username, and password.
-2. **Deploy the Web App on Render:**
-   * In the Render Dashboard, click **New +** and select **Web Service**.
-   * Connect your GitHub repository.
-   * Set **Language / Runtime** to `Docker` (Render will automatically detect the `Dockerfile` at the root).
-   * Choose the **Free** instance type.
-3. **Configure Environment Variables:**
-   * Go to the **Environment** tab of your new Web Service on Render.
-   * Add the following keys with your free database credentials:
-     * `DB_HOST` (e.g., `mysql-instance.aivencloud.com`)
-     * `DB_PORT` (e.g., `12345`)
-     * `DB_NAME` (e.g., `billing_system`)
-     * `DB_USER` (e.g., `avnadmin`)
-     * `DB_PASSWORD` (your database password)
-   * Click **Save Changes**.
-4. **Initialize Database:**
-   * Once your deployment finishes building and is live, navigate to:
-     `https://<your-render-subdomain>.onrender.com/database/migrate.php`
-   * This runs all migration scripts and automatically populates the remote database schema.
+1. In the Render Dashboard, click **New +** and select **Web Service**.
+2. Connect your GitHub repository.
+3. Set **Language / Runtime** to `Docker` (Render will automatically detect the `Dockerfile` at the root).
+4. Choose the **Free** instance type.
+5. Click **Create Web Service**.
+6. Once the build finishes and is live, navigate to:
+   `https://<your-render-subdomain>.onrender.com/database/migrate.php`
+   This runs the migrations and sets up the SQLite database immediately.
 
 ---
 

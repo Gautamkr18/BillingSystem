@@ -6,8 +6,8 @@ include '../includes/header.php';
 
 // Calculate overall tax collected
 $gst_query = "SELECT SUM(subtotal) as total_taxable, SUM(cgst) as total_cgst, SUM(sgst) as total_sgst, SUM(igst) as total_igst, SUM(gst_total) as total_tax FROM invoices";
-$gst_res = mysqli_query($conn, $gst_query);
-$gst_data = mysqli_fetch_assoc($gst_res);
+$gst_res = db_query($conn, $gst_query);
+$gst_data = db_fetch_assoc($gst_res);
 
 $total_taxable = $gst_data['total_taxable'] ? $gst_data['total_taxable'] : 0;
 $total_cgst = $gst_data['total_cgst'] ? $gst_data['total_cgst'] : 0;
@@ -31,8 +31,8 @@ if (isset($_GET['download_gstr1'])) {
     
     // 1. Fetch B2B sales (invoices where customer has a GSTIN)
     $b2b_query = "SELECT i.*, c.name, c.gstin FROM invoices i JOIN customers c ON i.customer_id = c.customer_id WHERE c.gstin IS NOT NULL AND c.gstin != ''";
-    $b2b_res = mysqli_query($conn, $b2b_query);
-    while($row = mysqli_fetch_assoc($b2b_res)) {
+    $b2b_res = db_query($conn, $b2b_query);
+    while($row = db_fetch_assoc($b2b_res)) {
         $gstr1_payload["b2b"][] = [
             "ctin" => $row['gstin'],
             "inv" => [
@@ -66,9 +66,9 @@ if (isset($_GET['download_gstr1'])) {
                   FROM invoice_items ii 
                   JOIN products p ON ii.product_id = p.product_id 
                   GROUP BY p.hsn_code";
-    $hsn_res = mysqli_query($conn, $hsn_query);
+    $hsn_res = db_query($conn, $hsn_query);
     $num = 1;
-    while($row = mysqli_fetch_assoc($hsn_res)) {
+    while($row = db_fetch_assoc($hsn_res)) {
         $gstr1_payload["hsn"]["data"][] = [
             "num" => $num++,
             "hsn_sc" => $row['hsn_code'],
@@ -164,14 +164,14 @@ if (isset($_GET['download_gstr1'])) {
             </thead>
             <tbody>
                 <?php
-                $hsn_items = mysqli_query($conn, "SELECT p.hsn_code, p.product_name, p.unit, SUM(ii.quantity) as total_qty, SUM(ii.price * ii.quantity - ii.discount) as taxable_value, SUM(ii.cgst + ii.sgst + ii.igst) as tax_amount 
+                $hsn_items = db_query($conn, "SELECT p.hsn_code, p.product_name, p.unit, SUM(ii.quantity) as total_qty, SUM(ii.price * ii.quantity - ii.discount) as taxable_value, SUM(ii.cgst + ii.sgst + ii.igst) as tax_amount 
                                                   FROM invoice_items ii 
                                                   JOIN products p ON ii.product_id = p.product_id 
                                                   GROUP BY p.hsn_code");
-                if (mysqli_num_rows($hsn_items) == 0) {
+                if (db_num_rows($hsn_items) == 0) {
                     echo "<tr><td colspan='6' style='text-align:center; color:var(--text-muted); padding:20px;'>No GST sales tracked yet.</td></tr>";
                 }
-                while ($row = mysqli_fetch_assoc($hsn_items)) {
+                while ($row = db_fetch_assoc($hsn_items)) {
                 ?>
                 <tr>
                     <td style="font-family: monospace; font-weight: bold;"><?php echo htmlspecialchars($row['hsn_code']); ?></td>
@@ -207,3 +207,4 @@ if (isset($_GET['download_gstr1'])) {
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

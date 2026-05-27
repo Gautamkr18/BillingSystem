@@ -9,8 +9,8 @@ if(!isset($_GET['id'])) {
 }
 
 $customer_id = $_GET['id'];
-$cust_res = mysqli_query($conn, "SELECT * FROM customers WHERE customer_id='$customer_id'");
-$customer = mysqli_fetch_assoc($cust_res);
+$cust_res = db_query($conn, "SELECT * FROM customers WHERE customer_id='$customer_id'");
+$customer = db_fetch_assoc($cust_res);
 
 if(!$customer) {
     echo "<script>alert('Customer not found'); window.location='customers.php';</script>";
@@ -20,24 +20,24 @@ if(!$customer) {
 // Handle Record Payment
 if(isset($_POST['record_payment'])){
     $amount = floatval($_POST['amount']);
-    $payment_method = mysqli_real_escape_string($conn, $_POST['payment_method']);
-    $remarks = mysqli_real_escape_string($conn, $_POST['remarks']);
+    $payment_method = db_real_escape_string($conn, $_POST['payment_method']);
+    $remarks = db_real_escape_string($conn, $_POST['remarks']);
     
     if($amount <= 0) {
         echo "<script>alert('Please enter a valid amount.');</script>";
     } else {
         // 1. Insert into customer_ledger
         $desc = "Payment Received via $payment_method - " . $remarks;
-        mysqli_query($conn, "INSERT INTO customer_ledger (customer_id, type, amount, description) 
+        db_query($conn, "INSERT INTO customer_ledger (customer_id, type, amount, description) 
                              VALUES ('$customer_id', 'CREDIT', '$amount', '$desc')");
                              
         // 2. Update customer credit balance (decrease the outstanding balance)
-        mysqli_query($conn, "UPDATE customers SET credit_balance = credit_balance - $amount WHERE customer_id='$customer_id'");
+        db_query($conn, "UPDATE customers SET credit_balance = credit_balance - $amount WHERE customer_id='$customer_id'");
         
         // Log Activity
         $username = $_SESSION['username'];
         $uid = $_SESSION['user_id'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) 
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) 
                              VALUES ('$uid', '$username', 'Customer Payment', 'Received ₹" . number_format($amount, 2) . " from customer " . $customer['name'] . "')");
                              
         echo "<script>alert('Payment Recorded Successfully!'); window.location='ledger.php?id=$customer_id';</script>";
@@ -110,13 +110,13 @@ if(isset($_POST['record_payment'])){
                 <?php
                 // Fetch dynamic ledger log
                 $query = "SELECT * FROM customer_ledger WHERE customer_id='$customer_id' ORDER BY id DESC";
-                $res = mysqli_query($conn, $query);
+                $res = db_query($conn, $query);
                 
-                if(mysqli_num_rows($res) == 0) {
+                if(db_num_rows($res) == 0) {
                     echo "<tr><td colspan='5' style='text-align:center; color:var(--text-muted); padding:30px;'>No transactions recorded for this customer.</td></tr>";
                 }
                 
-                while($row = mysqli_fetch_assoc($res)) {
+                while($row = db_fetch_assoc($res)) {
                 ?>
                 <tr>
                     <td style="color:var(--text-muted); font-size:0.9rem;"><?php echo date('d M Y h:i A', strtotime($row['created_at'])); ?></td>
@@ -179,3 +179,4 @@ if(isset($_POST['record_payment'])){
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

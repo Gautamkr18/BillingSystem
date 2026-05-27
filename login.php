@@ -8,10 +8,10 @@ if(isset($_POST['login'])){
     $password = MD5($_POST['password']);
 
     $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
-    $result = mysqli_query($conn, $query);
+    $result = db_query($conn, $query);
 
-    if(mysqli_num_rows($result) > 0){
-        $user = mysqli_fetch_assoc($result);
+    if(db_num_rows($result) > 0){
+        $user = db_fetch_assoc($result);
         $_SESSION['admin'] = $username;
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
@@ -19,7 +19,7 @@ if(isset($_POST['login'])){
         
         $user_id = $user['id'];
         $role = $_SESSION['role'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$user_id', '$username', 'Login', 'User logged in as $role')");
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$user_id', '$username', 'Login', 'User logged in as $role')");
         
         header("Location: admin/dashboard.php");
     } else {
@@ -79,3 +79,4 @@ if(isset($_POST['login'])){
 
 </body>
 </html>
+

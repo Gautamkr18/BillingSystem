@@ -8,27 +8,27 @@ date_default_timezone_set('Asia/Kolkata'); // Set to server's local timezone
 // Reset financial stats (sales only)
 if (isset($_POST['reset_stats'])) {
     // Truncate sales tables
-    mysqli_query($conn, "TRUNCATE TABLE invoice_items");
-    mysqli_query($conn, "TRUNCATE TABLE invoices");
+    db_query($conn, "TRUNCATE TABLE invoice_items");
+    db_query($conn, "TRUNCATE TABLE invoices");
     // Optionally reset activity logs if desired (commented out)
-    // mysqli_query($conn, "TRUNCATE TABLE activity_logs");
+    // db_query($conn, "TRUNCATE TABLE activity_logs");
     echo "<script>alert('Sales data has been reset.'); window.location='reports.php';</script>";
     exit;
 }
 
 // 1. Double-Entry Profit & Loss Math Calculations
 // Total Sales Revenue
-$sales_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(grand_total) as gross_sales FROM invoices"));
+$sales_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as gross_sales FROM invoices"));
 $gross_sales = $sales_res['gross_sales'] ? floatval($sales_res['gross_sales']) : 0.00;
 
 // Cost of Goods Sold (COGS) = SUM (sold items * product.cost_price)
-$cogs_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(ii.quantity * p.cost_price) as cogs 
+$cogs_res = db_fetch_assoc(db_query($conn, "SELECT SUM(ii.quantity * p.cost_price) as cogs 
                                                     FROM invoice_items ii 
                                                     JOIN products p ON ii.product_id = p.product_id"));
 $cogs = $cogs_res['cogs'] ? floatval($cogs_res['cogs']) : 0.00;
 
 // Overhead Expenses (Utilities, Rent, Salaries, travel etc.)
-$exp_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(amount) as overhead FROM expenses"));
+$exp_res = db_fetch_assoc(db_query($conn, "SELECT SUM(amount) as overhead FROM expenses"));
 $overhead = $exp_res['overhead'] ? floatval($exp_res['overhead']) : 0.00;
 
 // Gross Profit = Sales - COGS
@@ -39,26 +39,26 @@ $net_profit = $gross_profit - $overhead;
 
 
 // 2. Fetch daily sales for Chart.js Revenue Trend (Last 30 Days)
-$daily_sales = mysqli_query($conn, "SELECT DATE(invoice_date) as sdate, SUM(grand_total) as amt 
+$daily_sales = db_query($conn, "SELECT DATE(invoice_date) as sdate, SUM(grand_total) as amt 
                                     FROM invoices 
                                     GROUP BY DATE(invoice_date) 
                                     ORDER BY DATE(invoice_date) ASC 
                                     LIMIT 30");
 $chart_labels = [];
 $chart_values = [];
-while($row = mysqli_fetch_assoc($daily_sales)) {
+while($row = db_fetch_assoc($daily_sales)) {
     $chart_labels[] = date('d M', strtotime($row['sdate']));
     $chart_values[] = floatval($row['amt']);
 }
 
 // 3. Fetch Category Sales Distribution for Pie Chart
-$cat_sales = mysqli_query($conn, "SELECT p.category, SUM(ii.total) as total_cat 
+$cat_sales = db_query($conn, "SELECT p.category, SUM(ii.total) as total_cat 
                                   FROM invoice_items ii 
                                   JOIN products p ON ii.product_id = p.product_id 
                                   GROUP BY p.category");
 $cat_labels = [];
 $cat_values = [];
-while($row = mysqli_fetch_assoc($cat_sales)) {
+while($row = db_fetch_assoc($cat_sales)) {
     $cat_labels[] = $row['category'];
     $cat_values[] = floatval($row['total_cat']);
 }
@@ -231,16 +231,16 @@ new Chart(pieCtx, {
         </thead>
         <tbody>
             <?php
-            $top_products = mysqli_query($conn, "SELECT p.product_name, p.category, p.unit, SUM(ii.quantity) as qty_sold, SUM(ii.total) as total_generated 
+            $top_products = db_query($conn, "SELECT p.product_name, p.category, p.unit, SUM(ii.quantity) as qty_sold, SUM(ii.total) as total_generated 
                                                  FROM invoice_items ii 
                                                  JOIN products p ON ii.product_id = p.product_id 
                                                  GROUP BY p.product_id 
                                                  ORDER BY qty_sold DESC 
                                                  LIMIT 15");
-            if (mysqli_num_rows($top_products) == 0) {
+            if (db_num_rows($top_products) == 0) {
                 echo "<tr><td colspan='4' style='text-align:center; color:var(--text-muted); padding:20px;'>No billing data available to generate performance records.</td></tr>";
             }
-            while ($row = mysqli_fetch_assoc($top_products)) {
+            while ($row = db_fetch_assoc($top_products)) {
             ?>
             <tr>
                 <td style="font-weight: bold; color: var(--text-main);"><?php echo htmlspecialchars($row['product_name']); ?></td>
@@ -258,3 +258,4 @@ new Chart(pieCtx, {
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

@@ -9,15 +9,15 @@ if (!isset($_POST['invoice_id'])) {
     exit;
 }
 
-$invoice_id = mysqli_real_escape_string($conn, $_POST['invoice_id']);
+$invoice_id = db_real_escape_string($conn, $_POST['invoice_id']);
 
 // Get Invoice
 $query = "SELECT i.*, c.name, c.phone, c.email, c.address, c.gstin 
           FROM invoices i 
           JOIN customers c ON i.customer_id = c.customer_id 
           WHERE i.invoice_id = '$invoice_id'";
-$result = mysqli_query($conn, $query);
-$invoice = mysqli_fetch_assoc($result);
+$result = db_query($conn, $query);
+$invoice = db_fetch_assoc($result);
 
 if (!$invoice) {
     echo json_encode(['success' => false, 'message' => 'Invoice not found.']);
@@ -34,10 +34,10 @@ $items_query = "SELECT ii.*, p.product_name, p.unit
                 FROM invoice_items ii 
                 JOIN products p ON ii.product_id = p.product_id 
                 WHERE ii.invoice_id = '$invoice_id'";
-$items_result = mysqli_query($conn, $items_query);
+$items_result = db_query($conn, $items_query);
 
 $items_rows = "";
-while ($item = mysqli_fetch_assoc($items_result)) {
+while ($item = db_fetch_assoc($items_result)) {
     $items_rows .= "<tr>
         <td>" . htmlspecialchars($item['product_name']) . "</td>
         <td>" . $item['quantity'] . " " . htmlspecialchars($item['unit']) . "</td>
@@ -124,3 +124,4 @@ if (@mail($invoice['email'], $subject, $body, $headers)) {
     echo json_encode(['success' => true, 'message' => 'Invoice email prepared and sent to ' . htmlspecialchars($invoice['email']) . '! (Server sandbox simulation check: Success)']);
 }
 ?>
+

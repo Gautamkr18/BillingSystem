@@ -7,15 +7,15 @@ include '../includes/header.php';
 if (isset($_POST['adjust_stock'])) {
     $product_id = $_POST['product_id'];
     $qty = intval($_POST['quantity']);
-    $type = mysqli_real_escape_string($conn, $_POST['adj_type']); // 'IN' or 'DAMAGE'
-    $remarks = mysqli_real_escape_string($conn, $_POST['remarks']);
+    $type = db_real_escape_string($conn, $_POST['adj_type']); // 'IN' or 'DAMAGE'
+    $remarks = db_real_escape_string($conn, $_POST['remarks']);
     
     if ($qty <= 0) {
         echo "<script>alert('Error: Quantity must be greater than zero.');</script>";
     } else {
         // Fetch current product
-        $prod_res = mysqli_query($conn, "SELECT product_name, stock_quantity FROM products WHERE product_id='$product_id'");
-        $product = mysqli_fetch_assoc($prod_res);
+        $prod_res = db_query($conn, "SELECT product_name, stock_quantity FROM products WHERE product_id='$product_id'");
+        $product = db_fetch_assoc($prod_res);
         
         if (!$product) {
             echo "<script>alert('Error: Product not found.');</script>";
@@ -36,16 +36,16 @@ if (isset($_POST['adjust_stock'])) {
                 }
                 
                 // 1. Update stock_quantity in database
-                mysqli_query($conn, "UPDATE products SET stock_quantity = '$new_stock' WHERE product_id='$product_id'");
+                db_query($conn, "UPDATE products SET stock_quantity = '$new_stock' WHERE product_id='$product_id'");
                 
                 // 2. Insert into inventory_logs
-                mysqli_query($conn, "INSERT INTO inventory_logs (product_id, quantity, type, remarks) VALUES ('$product_id', '$log_qty', '$type', '$remarks')");
+                db_query($conn, "INSERT INTO inventory_logs (product_id, quantity, type, remarks) VALUES ('$product_id', '$log_qty', '$type', '$remarks')");
                 
                 // 3. Insert into activity_logs
                 $username = $_SESSION['username'];
                 $uid = $_SESSION['user_id'];
                 $action_desc = ($type == 'IN') ? "Restocked $qty $product_name" : "Reported $qty damaged $product_name";
-                mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Stock Adjustment', '$action_desc')");
+                db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Stock Adjustment', '$action_desc')");
                 
                 echo "<script>alert('Stock Adjusted Successfully!'); window.location='inventory.php';</script>";
             }
@@ -57,11 +57,11 @@ if (isset($_POST['adjust_stock'])) {
 if (isset($_POST['delete_product'])) {
     $del_id = $_POST['delete_product'];
     // Delete product from products table
-    $del_res = mysqli_query($conn, "DELETE FROM products WHERE product_id='$del_id'");
+    $del_res = db_query($conn, "DELETE FROM products WHERE product_id='$del_id'");
     // Optionally delete related logs
-    mysqli_query($conn, "DELETE FROM inventory_logs WHERE product_id='$del_id'");
+    db_query($conn, "DELETE FROM inventory_logs WHERE product_id='$del_id'");
     // Remove activity logs referencing this product (simple pattern match)
-    mysqli_query($conn, "DELETE FROM activity_logs WHERE details LIKE CONCAT('%', '$del_id', '%')");
+    db_query($conn, "DELETE FROM activity_logs WHERE details LIKE CONCAT('%', '$del_id', '%')");
     if ($del_res) {
         echo "<script>alert('Product deleted successfully.'); window.location='inventory.php';</script>"; exit;
     } else {
@@ -72,10 +72,10 @@ if (isset($_POST['delete_product'])) {
 // Delete all products
 if (isset($_POST['delete_all_products'])) {
     // Delete all rows from products
-    mysqli_query($conn, "DELETE FROM products");
+    db_query($conn, "DELETE FROM products");
     // Clean related logs
-    mysqli_query($conn, "DELETE FROM inventory_logs");
-    mysqli_query($conn, "DELETE FROM activity_logs");
+    db_query($conn, "DELETE FROM inventory_logs");
+    db_query($conn, "DELETE FROM activity_logs");
     echo "<script>alert('All products deleted successfully.'); window.location='inventory.php';</script>"; exit;
 }
 
@@ -90,8 +90,8 @@ if (isset($_POST['delete_all_products'])) {
     <!-- Card 1: Low Stock Warning Count -->
     <?php
     $low_stock_query = "SELECT COUNT(*) as count FROM products WHERE stock_quantity <= low_stock_threshold";
-    $low_stock_res = mysqli_query($conn, $low_stock_query);
-    $low_stock_data = mysqli_fetch_assoc($low_stock_res);
+    $low_stock_res = db_query($conn, $low_stock_query);
+    $low_stock_data = db_fetch_assoc($low_stock_res);
     $low_stock_count = $low_stock_data['count'];
     ?>
     <div class="stat-card" style="border-left-color: var(--error); display: flex; align-items: center; gap: 20px; box-sizing: border-box;">
@@ -107,8 +107,8 @@ if (isset($_POST['delete_all_products'])) {
     <!-- Card 2: Total Items in Inventory -->
     <?php
     $total_stock_query = "SELECT SUM(stock_quantity) as total FROM products";
-    $total_stock_res = mysqli_query($conn, $total_stock_query);
-    $total_stock_data = mysqli_fetch_assoc($total_stock_res);
+    $total_stock_res = db_query($conn, $total_stock_query);
+    $total_stock_data = db_fetch_assoc($total_stock_res);
     $total_stock = $total_stock_data['total'] ? $total_stock_data['total'] : 0;
     ?>
     <div class="stat-card" style="border-left-color: var(--secondary-color); display: flex; align-items: center; gap: 20px; box-sizing: border-box;">
@@ -141,11 +141,11 @@ if (isset($_POST['delete_all_products'])) {
             </thead>
             <tbody>
                 <?php
-                $low_stock_items = mysqli_query($conn, "SELECT * FROM products WHERE stock_quantity <= low_stock_threshold ORDER BY stock_quantity ASC");
-                if (mysqli_num_rows($low_stock_items) == 0) {
+                $low_stock_items = db_query($conn, "SELECT * FROM products WHERE stock_quantity <= low_stock_threshold ORDER BY stock_quantity ASC");
+                if (db_num_rows($low_stock_items) == 0) {
                     echo "<tr><td colspan='5' style='text-align:center; color:#10B981; font-weight:bold; padding:25px;'>All products are safely above stock thresholds!</td></tr>";
                 }
-                while ($item = mysqli_fetch_assoc($low_stock_items)) {
+                while ($item = db_fetch_assoc($low_stock_items)) {
                 ?>
                 <tr>
                     <td style="font-weight: 600;"><?php echo htmlspecialchars($item['product_name']); ?></td>
@@ -177,8 +177,8 @@ if (isset($_POST['delete_all_products'])) {
                 <select name="product_id" required style="width: 100%;">
                     <option value="">-- Choose Product --</option>
                     <?php
-                    $prods = mysqli_query($conn, "SELECT product_id, product_name, stock_quantity, unit FROM products ORDER BY product_name ASC");
-                    while($p = mysqli_fetch_assoc($prods)){
+                    $prods = db_query($conn, "SELECT product_id, product_name, stock_quantity, unit FROM products ORDER BY product_name ASC");
+                    while($p = db_fetch_assoc($prods)){
                     ?>
                     <option value="<?php echo $p['product_id']; ?>">
                         <?php echo htmlspecialchars($p['product_name']); ?> (Stock: <?php echo $p['stock_quantity'] . ' ' . $p['unit']; ?>)
@@ -226,8 +226,8 @@ if (isset($_POST['delete_all_products'])) {
         </thead>
         <tbody>
             <?php
-            $all_products = mysqli_query($conn, "SELECT * FROM products ORDER BY product_name ASC");
-            while($p = mysqli_fetch_assoc($all_products)) {
+            $all_products = db_query($conn, "SELECT * FROM products ORDER BY product_name ASC");
+            while($p = db_fetch_assoc($all_products)) {
             ?>
             <tr>
                 <td style="font-weight: 600; color: var(--text-main);"><?php echo htmlspecialchars($p['product_name']); ?></td>
@@ -270,11 +270,11 @@ if (isset($_POST['delete_all_products'])) {
         <tbody>
             <?php
             $query = "SELECT l.*, p.product_name, p.unit, p.stock_quantity FROM inventory_logs l JOIN products p ON l.product_id = p.product_id ORDER BY l.id DESC LIMIT 50";
-            $log_res = mysqli_query($conn, $query);
-            if(mysqli_num_rows($log_res) == 0) {
+            $log_res = db_query($conn, $query);
+            if(db_num_rows($log_res) == 0) {
                 echo "<tr><td colspan='5' style='text-align:center; color:var(--text-muted); padding:20px;'>No stock logs available yet.</td></tr>";
             }
-            while($row = mysqli_fetch_assoc($log_res)) {
+            while($row = db_fetch_assoc($log_res)) {
                 $type_color = "var(--secondary-color)";
                 $badge_bg = "rgba(16, 185, 129, 0.1)";
                 if($row['type'] == 'DAMAGE') {
@@ -304,3 +304,4 @@ if (isset($_POST['delete_all_products'])) {
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

@@ -19,33 +19,33 @@ if(isset($_POST['delete_product'])){
     $del_id = $_POST['delete_id'];
     
     // Fetch product name for logs
-    $p_res = mysqli_query($conn, "SELECT product_name FROM products WHERE product_id='$del_id'");
-    $p_data = mysqli_fetch_assoc($p_res);
+    $p_res = db_query($conn, "SELECT product_name FROM products WHERE product_id='$del_id'");
+    $p_data = db_fetch_assoc($p_res);
     $product_name = $p_data['product_name'];
     
-    mysqli_query($conn,"DELETE FROM products WHERE product_id='$del_id'");
+    db_query($conn,"DELETE FROM products WHERE product_id='$del_id'");
     
     // Log Activity
     $username = $_SESSION['username'];
     $uid = $_SESSION['user_id'];
-    mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Product', 'Deleted product $product_name')");
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Product', 'Deleted product $product_name')");
     
     echo "<script>alert('Product Deleted Successfully'); window.location='products.php';</script>";
 }
 
 // Handle Add
 if(isset($_POST['add_product'])){
-    $product_name = mysqli_real_escape_string($conn, $_POST['product_name']);
+    $product_name = db_real_escape_string($conn, $_POST['product_name']);
     $price = floatval($_POST['price']);
     $cost_price = floatval($_POST['cost_price']);
     $gst = floatval($_POST['gst']);
     $stock = intval($_POST['stock']);
-    $category = mysqli_real_escape_string($conn, $_POST['category']);
-    $barcode = mysqli_real_escape_string($conn, $_POST['barcode']);
-    $hsn_code = mysqli_real_escape_string($conn, $_POST['hsn_code']);
-    $brand = mysqli_real_escape_string($conn, $_POST['brand']);
-    $supplier = mysqli_real_escape_string($conn, $_POST['supplier']);
-    $unit = mysqli_real_escape_string($conn, $_POST['unit']);
+    $category = db_real_escape_string($conn, $_POST['category']);
+    $barcode = db_real_escape_string($conn, $_POST['barcode']);
+    $hsn_code = db_real_escape_string($conn, $_POST['hsn_code']);
+    $brand = db_real_escape_string($conn, $_POST['brand']);
+    $supplier = db_real_escape_string($conn, $_POST['supplier']);
+    $unit = db_real_escape_string($conn, $_POST['unit']);
     $expiry_date = !empty($_POST['expiry_date']) ? "'".$_POST['expiry_date']."'" : "NULL";
     $low_stock = intval($_POST['low_stock']);
     
@@ -62,36 +62,36 @@ if(isset($_POST['add_product'])){
     $query = "INSERT INTO products (product_name, price, cost_price, gst_percentage, stock_quantity, category, barcode, hsn_code, brand, supplier, image_path, expiry_date, unit, low_stock_threshold)
               VALUES ('$product_name', '$price', '$cost_price', '$gst', '$stock', '$category', '$barcode', '$hsn_code', '$brand', '$supplier', '$image_path', $expiry_date, '$unit', '$low_stock')";
               
-    if(mysqli_query($conn, $query)) {
-        $new_id = mysqli_insert_id($conn);
+    if(db_query($conn, $query)) {
+        $new_id = db_insert_id($conn);
         // Log to inventory logs
-        mysqli_query($conn, "INSERT INTO inventory_logs(product_id, quantity, type, remarks) VALUES ('$new_id', '$stock', 'IN', 'Opening Stock')");
+        db_query($conn, "INSERT INTO inventory_logs(product_id, quantity, type, remarks) VALUES ('$new_id', '$stock', 'IN', 'Opening Stock')");
         
         // Log Activity
         $username = $_SESSION['username'];
         $uid = $_SESSION['user_id'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Add Product', 'Added product $product_name')");
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Add Product', 'Added product $product_name')");
         
         echo "<script>alert('Product Added Successfully'); window.location='products.php';</script>";
     } else {
-        echo "<script>alert('Error adding product: " . mysqli_error($conn) . "');</script>";
+        echo "<script>alert('Error adding product: " . db_error($conn) . "');</script>";
     }
 }
 
 // Handle Update
 if(isset($_POST['update_product'])){
     $update_id = $_POST['product_id'];
-    $product_name = mysqli_real_escape_string($conn, $_POST['product_name']);
+    $product_name = db_real_escape_string($conn, $_POST['product_name']);
     $price = floatval($_POST['price']);
     $cost_price = floatval($_POST['cost_price']);
     $gst = floatval($_POST['gst']);
     $stock = intval($_POST['stock']);
-    $category = mysqli_real_escape_string($conn, $_POST['category']);
-    $barcode = mysqli_real_escape_string($conn, $_POST['barcode']);
-    $hsn_code = mysqli_real_escape_string($conn, $_POST['hsn_code']);
-    $brand = mysqli_real_escape_string($conn, $_POST['brand']);
-    $supplier = mysqli_real_escape_string($conn, $_POST['supplier']);
-    $unit = mysqli_real_escape_string($conn, $_POST['unit']);
+    $category = db_real_escape_string($conn, $_POST['category']);
+    $barcode = db_real_escape_string($conn, $_POST['barcode']);
+    $hsn_code = db_real_escape_string($conn, $_POST['hsn_code']);
+    $brand = db_real_escape_string($conn, $_POST['brand']);
+    $supplier = db_real_escape_string($conn, $_POST['supplier']);
+    $unit = db_real_escape_string($conn, $_POST['unit']);
     $expiry_date = !empty($_POST['expiry_date']) ? "'".$_POST['expiry_date']."'" : "NULL";
     $low_stock = intval($_POST['low_stock']);
     
@@ -123,15 +123,15 @@ if(isset($_POST['update_product'])){
               $image_update_sql 
               WHERE product_id='$update_id'";
               
-    if(mysqli_query($conn, $query)) {
+    if(db_query($conn, $query)) {
         // Log Activity
         $username = $_SESSION['username'];
         $uid = $_SESSION['user_id'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Update Product', 'Updated product $product_name')");
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Update Product', 'Updated product $product_name')");
         
         echo "<script>alert('Product Updated Successfully'); window.location='products.php';</script>";
     } else {
-        echo "<script>alert('Error updating product: " . mysqli_error($conn) . "');</script>";
+        echo "<script>alert('Error updating product: " . db_error($conn) . "');</script>";
     }
 }
 
@@ -154,10 +154,10 @@ $edit_data = [
 ];
 if(isset($_GET['edit']) && isAdmin()){
     $edit_id = $_GET['edit'];
-    $edit_result = mysqli_query($conn, "SELECT * FROM products WHERE product_id='$edit_id'");
-    if(mysqli_num_rows($edit_result) > 0){
+    $edit_result = db_query($conn, "SELECT * FROM products WHERE product_id='$edit_id'");
+    if(db_num_rows($edit_result) > 0){
         $edit_mode = true;
-        $edit_data = mysqli_fetch_assoc($edit_result);
+        $edit_data = db_fetch_assoc($edit_result);
     }
 }
 ?>
@@ -272,8 +272,8 @@ if(isset($_GET['edit']) && isAdmin()){
         </thead>
         <tbody>
             <?php
-            $result = mysqli_query($conn,"SELECT * FROM products ORDER BY product_id DESC");
-            while($row = mysqli_fetch_assoc($result)){
+            $result = db_query($conn,"SELECT * FROM products ORDER BY product_id DESC");
+            while($row = db_fetch_assoc($result)){
                 $stock_class = "color: #10B981; font-weight: bold;";
                 $stock_status = "In Stock";
                 if ($row['stock_quantity'] <= 0) {
@@ -334,3 +334,4 @@ if(isset($_GET['edit']) && isAdmin()){
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

@@ -14,8 +14,8 @@ $query = "SELECT i.*, c.name, c.phone, c.email, c.address, c.gstin
           FROM invoices i 
           JOIN customers c ON i.customer_id = c.customer_id 
           WHERE i.invoice_id = '$invoice_id'";
-$result = mysqli_query($conn, $query);
-$invoice = mysqli_fetch_assoc($result);
+$result = db_query($conn, $query);
+$invoice = db_fetch_assoc($result);
 
 if(!$invoice) {
     die("Invoice not found.");
@@ -26,9 +26,9 @@ $items_query = "SELECT ii.*, p.product_name, p.hsn_code, p.unit
                 FROM invoice_items ii 
                 JOIN products p ON ii.product_id = p.product_id 
                 WHERE ii.invoice_id = '$invoice_id'";
-$items_result = mysqli_query($conn, $items_query);
+$items_result = db_query($conn, $items_query);
 $items = [];
-while ($it = mysqli_fetch_assoc($items_result)) {
+while ($it = db_fetch_assoc($items_result)) {
     $items[] = $it;
 }
 
@@ -770,3 +770,4 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
     </script>
 </body>
 </html>
+

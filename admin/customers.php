@@ -7,38 +7,38 @@ include '../includes/header.php';
 if(isset($_POST['delete_customer'])){
     restrictToAdmin();
     $del_id = $_POST['delete_id'];
-    mysqli_query($conn,"DELETE FROM customers WHERE customer_id='$del_id'");
-    mysqli_query($conn,"DELETE FROM customer_ledger WHERE customer_id='$del_id'");
+    db_query($conn,"DELETE FROM customers WHERE customer_id='$del_id'");
+    db_query($conn,"DELETE FROM customer_ledger WHERE customer_id='$del_id'");
     
     // Log Activity
     $username = $_SESSION['username'];
     $uid = $_SESSION['user_id'];
-    mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Customer', 'Deleted customer ID $del_id')");
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Customer', 'Deleted customer ID $del_id')");
     
     echo "<script>alert('Customer Deleted Successfully'); window.location='customers.php';</script>";
 }
 
 // Handle Add
 if(isset($_POST['add_customer'])){
-    $name = mysqli_real_escape_string($conn, $_POST['name']);
-    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $address = mysqli_real_escape_string($conn, $_POST['address']);
-    $gstin = mysqli_real_escape_string($conn, $_POST['gstin']);
+    $name = db_real_escape_string($conn, $_POST['name']);
+    $phone = db_real_escape_string($conn, $_POST['phone']);
+    $email = db_real_escape_string($conn, $_POST['email']);
+    $address = db_real_escape_string($conn, $_POST['address']);
+    $gstin = db_real_escape_string($conn, $_POST['gstin']);
     $credit = !empty($_POST['credit_balance']) ? floatval($_POST['credit_balance']) : 0.00;
 
-    mysqli_query($conn,"INSERT INTO customers(name,phone,email,address,gstin,credit_balance)
+    db_query($conn,"INSERT INTO customers(name,phone,email,address,gstin,credit_balance)
     VALUES('$name','$phone','$email','$address','$gstin','$credit')");
-    $new_id = mysqli_insert_id($conn);
+    $new_id = db_insert_id($conn);
     
     // Log Activity
     $username = $_SESSION['username'];
     $uid = $_SESSION['user_id'];
-    mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Add Customer', 'Added customer $name')");
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Add Customer', 'Added customer $name')");
     
     if($credit > 0) {
         // Log to customer ledger as opening credit balance
-        mysqli_query($conn, "INSERT INTO customer_ledger(customer_id, type, amount, description) VALUES ('$new_id', 'CREDIT', '$credit', 'Opening Balance')");
+        db_query($conn, "INSERT INTO customer_ledger(customer_id, type, amount, description) VALUES ('$new_id', 'CREDIT', '$credit', 'Opening Balance')");
     }
     
     echo "<script>alert('Customer Added Successfully'); window.location='customers.php';</script>";
@@ -47,19 +47,19 @@ if(isset($_POST['add_customer'])){
 // Handle Update
 if(isset($_POST['update_customer'])){
     $update_id = $_POST['customer_id'];
-    $name = mysqli_real_escape_string($conn, $_POST['name']);
-    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $address = mysqli_real_escape_string($conn, $_POST['address']);
-    $gstin = mysqli_real_escape_string($conn, $_POST['gstin']);
+    $name = db_real_escape_string($conn, $_POST['name']);
+    $phone = db_real_escape_string($conn, $_POST['phone']);
+    $email = db_real_escape_string($conn, $_POST['email']);
+    $address = db_real_escape_string($conn, $_POST['address']);
+    $gstin = db_real_escape_string($conn, $_POST['gstin']);
     $credit = !empty($_POST['credit_balance']) ? floatval($_POST['credit_balance']) : 0.00;
 
-    mysqli_query($conn,"UPDATE customers SET name='$name', phone='$phone', email='$email', address='$address', gstin='$gstin', credit_balance='$credit' WHERE customer_id='$update_id'");
+    db_query($conn,"UPDATE customers SET name='$name', phone='$phone', email='$email', address='$address', gstin='$gstin', credit_balance='$credit' WHERE customer_id='$update_id'");
     
     // Log Activity
     $username = $_SESSION['username'];
     $uid = $_SESSION['user_id'];
-    mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Update Customer', 'Updated customer $name')");
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Update Customer', 'Updated customer $name')");
 
     echo "<script>alert('Customer Updated Successfully'); window.location='customers.php';</script>";
 }
@@ -76,10 +76,10 @@ $edit_data = [
 ];
 if(isset($_GET['edit'])){
     $edit_id = $_GET['edit'];
-    $edit_result = mysqli_query($conn, "SELECT * FROM customers WHERE customer_id='$edit_id'");
-    if(mysqli_num_rows($edit_result) > 0){
+    $edit_result = db_query($conn, "SELECT * FROM customers WHERE customer_id='$edit_id'");
+    if(db_num_rows($edit_result) > 0){
         $edit_mode = true;
-        $edit_data = mysqli_fetch_assoc($edit_result);
+        $edit_data = db_fetch_assoc($edit_result);
     }
 }
 ?>
@@ -144,8 +144,8 @@ if(isset($_GET['edit'])){
         </thead>
         <tbody>
             <?php
-            $result = mysqli_query($conn,"SELECT * FROM customers ORDER BY customer_id DESC");
-            while($row = mysqli_fetch_assoc($result)){
+            $result = db_query($conn,"SELECT * FROM customers ORDER BY customer_id DESC");
+            while($row = db_fetch_assoc($result)){
             ?>
             <tr>
                 <td>#<?php echo $row['customer_id']; ?></td>
@@ -180,3 +180,4 @@ if(isset($_GET['edit'])){
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

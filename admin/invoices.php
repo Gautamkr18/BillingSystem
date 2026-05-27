@@ -9,8 +9,8 @@ if(isset($_POST['delete_invoice'])){
     $del_id = $_POST['delete_id'];
     
     // Fetch customer_id, grand_total, payment_status for restoring stock and credit
-    $inv_res = mysqli_query($conn, "SELECT * FROM invoices WHERE invoice_id='$del_id'");
-    $invoice = mysqli_fetch_assoc($inv_res);
+    $inv_res = db_query($conn, "SELECT * FROM invoices WHERE invoice_id='$del_id'");
+    $invoice = db_fetch_assoc($inv_res);
     
     if ($invoice) {
         $customer_id = $invoice['customer_id'];
@@ -18,30 +18,30 @@ if(isset($_POST['delete_invoice'])){
         $status = $invoice['payment_status'];
         
         // Restore product stock
-        $items_res = mysqli_query($conn, "SELECT * FROM invoice_items WHERE invoice_id='$del_id'");
-        while ($item = mysqli_fetch_assoc($items_res)) {
+        $items_res = db_query($conn, "SELECT * FROM invoice_items WHERE invoice_id='$del_id'");
+        while ($item = db_fetch_assoc($items_res)) {
             $pid = $item['product_id'];
             $qty = $item['quantity'];
-            mysqli_query($conn, "UPDATE products SET stock_quantity = stock_quantity + $qty WHERE product_id='$pid'");
+            db_query($conn, "UPDATE products SET stock_quantity = stock_quantity + $qty WHERE product_id='$pid'");
             // Log inventory movement
-            mysqli_query($conn, "INSERT INTO inventory_logs (product_id, quantity, type, remarks) VALUES ('$pid', '$qty', 'IN', 'Restored from deleted Invoice #$del_id')");
+            db_query($conn, "INSERT INTO inventory_logs (product_id, quantity, type, remarks) VALUES ('$pid', '$qty', 'IN', 'Restored from deleted Invoice #$del_id')");
         }
         
         // Deduct outstanding dues from customer's credit balance
         $due_amount = $invoice['grand_total'] - $invoice['amount_paid'];
         if ($due_amount > 0) {
-            mysqli_query($conn, "UPDATE customers SET credit_balance = credit_balance - $due_amount WHERE customer_id='$customer_id'");
+            db_query($conn, "UPDATE customers SET credit_balance = credit_balance - $due_amount WHERE customer_id='$customer_id'");
         }
         
         // Delete invoice logs and ledger records
-        mysqli_query($conn, "DELETE FROM customer_ledger WHERE invoice_id='$del_id'");
-        mysqli_query($conn, "DELETE FROM invoice_items WHERE invoice_id='$del_id'");
-        mysqli_query($conn, "DELETE FROM invoices WHERE invoice_id='$del_id'");
+        db_query($conn, "DELETE FROM customer_ledger WHERE invoice_id='$del_id'");
+        db_query($conn, "DELETE FROM invoice_items WHERE invoice_id='$del_id'");
+        db_query($conn, "DELETE FROM invoices WHERE invoice_id='$del_id'");
         
         // Log Activity
         $username = $_SESSION['username'];
         $uid = $_SESSION['user_id'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Invoice', 'Deleted invoice #$del_id and restored inventory')");
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Invoice', 'Deleted invoice #$del_id and restored inventory')");
         
         echo "<script>alert('Invoice Deleted and Stock Restored successfully.'); window.location='invoices.php';</script>";
     }
@@ -75,7 +75,7 @@ if(isset($_POST['create_invoice'])){
         
         if(empty($pid) || empty($qty) || $qty <= 0) continue;
         
-        $product = mysqli_fetch_assoc(mysqli_query($conn,"SELECT * FROM products WHERE product_id='$pid'"));
+        $product = db_fetch_assoc(db_query($conn,"SELECT * FROM products WHERE product_id='$pid'"));
         
         if ($product['stock_quantity'] < $qty) {
             $has_error = true;
@@ -156,8 +156,8 @@ if(isset($_POST['create_invoice'])){
         $query = "INSERT INTO invoices (customer_id, subtotal, gst_total, cgst, sgst, igst, discount, round_off, grand_total, payment_method, amount_paid, payment_status)
                   VALUES ('$customer_id', '$total_subtotal', '$exact_gst_total', '$total_cgst', '$total_sgst', '$total_igst', '$bill_discount', '$round_off', '$rounded_grand_total', '$payment_method', '$amount_paid', '$payment_status')";
         
-        if (mysqli_query($conn, $query)) {
-            $invoice_id = mysqli_insert_id($conn);
+        if (db_query($conn, $query)) {
+            $invoice_id = db_insert_id($conn);
             
             // 3. Create Invoice Items, Deduct Stock & Log inventory
             foreach ($invoice_items as $item) {
@@ -170,37 +170,37 @@ if(isset($_POST['create_invoice'])){
                 $igst = $item['igst'];
                 $total = $item['total'];
                 
-                mysqli_query($conn,"INSERT INTO invoice_items(invoice_id, product_id, quantity, price, discount, cgst, sgst, igst, total)
+                db_query($conn,"INSERT INTO invoice_items(invoice_id, product_id, quantity, price, discount, cgst, sgst, igst, total)
                                     VALUES('$invoice_id', '$pid', '$qty', '$price', '$disc', '$cgst', '$sgst', '$igst', '$total')");
                 
                 // Deduct stock and log stock out
-                mysqli_query($conn,"UPDATE products SET stock_quantity = stock_quantity - $qty WHERE product_id='$pid'");
-                mysqli_query($conn,"INSERT INTO inventory_logs(product_id, quantity, type, remarks) VALUES ('$pid', '-$qty', 'OUT', 'Invoice #$invoice_id Sale')");
+                db_query($conn,"UPDATE products SET stock_quantity = stock_quantity - $qty WHERE product_id='$pid'");
+                db_query($conn,"INSERT INTO inventory_logs(product_id, quantity, type, remarks) VALUES ('$pid', '-$qty', 'OUT', 'Invoice #$invoice_id Sale')");
             }
             
             // 4. Record to Customer Ledger & manage outstanding credit
-            $cust_name_query = mysqli_query($conn, "SELECT name FROM customers WHERE customer_id='$customer_id'");
-            $cust_data = mysqli_fetch_assoc($cust_name_query);
+            $cust_name_query = db_query($conn, "SELECT name FROM customers WHERE customer_id='$customer_id'");
+            $cust_data = db_fetch_assoc($cust_name_query);
             $customer_name = $cust_data['name'];
             
             // DEBIT entry for the invoice purchase
-            mysqli_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
+            db_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
                                  VALUES ('$customer_id', '$invoice_id', 'DEBIT', '$rounded_grand_total', 'Purchase - Invoice #$invoice_id')");
             
             if ($amount_paid > 0) {
-                mysqli_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
+                db_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
                                      VALUES ('$customer_id', '$invoice_id', 'CREDIT', '$amount_paid', 'Paid at checkout via $payment_method')");
             }
             
             $due_amount = $rounded_grand_total - $amount_paid;
             if ($due_amount > 0) {
-                mysqli_query($conn, "UPDATE customers SET credit_balance = credit_balance + $due_amount WHERE customer_id='$customer_id'");
+                db_query($conn, "UPDATE customers SET credit_balance = credit_balance + $due_amount WHERE customer_id='$customer_id'");
             }
             
             // 5. Activity Log
             $username = $_SESSION['username'];
             $uid = $_SESSION['user_id'];
-            mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Create Invoice', 'Generated invoice #$invoice_id for customer $customer_name, Total: ₹$rounded_grand_total')");
+            db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Create Invoice', 'Generated invoice #$invoice_id for customer $customer_name, Total: ₹$rounded_grand_total')");
             
             echo "<script>
                 alert('Invoice Created Successfully! Grand Total: ₹" . number_format($rounded_grand_total, 2) . "');
@@ -208,7 +208,7 @@ if(isset($_POST['create_invoice'])){
                 window.location='invoices.php';
             </script>";
         } else {
-            echo "<script>alert('Error generating invoice: " . mysqli_error($conn) . "');</script>";
+            echo "<script>alert('Error generating invoice: " . db_error($conn) . "');</script>";
         }
     } else {
         echo "<script>alert('Please add at least one valid product.');</script>";
@@ -217,13 +217,13 @@ if(isset($_POST['create_invoice'])){
 
 // Handle Record Specific Invoice Payment
 if (isset($_POST['record_invoice_payment'])) {
-    $invoice_id = mysqli_real_escape_string($conn, $_POST['pay_invoice_id']);
+    $invoice_id = db_real_escape_string($conn, $_POST['pay_invoice_id']);
     $pay_amount = floatval($_POST['pay_amount']);
-    $payment_method = mysqli_real_escape_string($conn, $_POST['pay_method']);
+    $payment_method = db_real_escape_string($conn, $_POST['pay_method']);
     
     // Fetch current invoice
-    $inv_res = mysqli_query($conn, "SELECT * FROM invoices WHERE invoice_id='$invoice_id'");
-    $invoice = mysqli_fetch_assoc($inv_res);
+    $inv_res = db_query($conn, "SELECT * FROM invoices WHERE invoice_id='$invoice_id'");
+    $invoice = db_fetch_assoc($inv_res);
     
     if ($invoice && $pay_amount > 0) {
         $customer_id = $invoice['customer_id'];
@@ -239,20 +239,20 @@ if (isset($_POST['record_invoice_payment'])) {
             $new_status = ($new_amount_paid >= $grand_total) ? 'Paid' : 'Partial';
             
             // 1. Update invoice paid amount and status
-            mysqli_query($conn, "UPDATE invoices SET amount_paid='$new_amount_paid', payment_status='$new_status' WHERE invoice_id='$invoice_id'");
+            db_query($conn, "UPDATE invoices SET amount_paid='$new_amount_paid', payment_status='$new_status' WHERE invoice_id='$invoice_id'");
             
             // 2. Reduce customer's outstanding credit balance
-            mysqli_query($conn, "UPDATE customers SET credit_balance = credit_balance - $actual_payment WHERE customer_id='$customer_id'");
+            db_query($conn, "UPDATE customers SET credit_balance = credit_balance - $actual_payment WHERE customer_id='$customer_id'");
             
             // 3. Record CREDIT entry in customer ledger
             $desc = "Dues Payment Received via $payment_method for Invoice #" . str_pad($invoice_id, 6, "0", STR_PAD_LEFT);
-            mysqli_query($conn, "INSERT INTO customer_ledger (customer_id, invoice_id, type, amount, description) 
+            db_query($conn, "INSERT INTO customer_ledger (customer_id, invoice_id, type, amount, description) 
                                  VALUES ('$customer_id', '$invoice_id', 'CREDIT', '$actual_payment', '$desc')");
                                  
             // 4. Log Activity
             $username = $_SESSION['username'];
             $uid = $_SESSION['user_id'];
-            mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) 
+            db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) 
                                  VALUES ('$uid', '$username', 'Invoice Dues Payment', 'Received ₹" . number_format($actual_payment, 2) . " for Invoice #$invoice_id')");
                                  
             echo "<script>alert('Invoice Payment recorded successfully!'); window.location='invoices.php';</script>";
@@ -278,8 +278,8 @@ if (isset($_POST['record_invoice_payment'])) {
                 <select name="customer_id" required style="width: 100%;">
                     <option value="">-- Choose Customer --</option>
                     <?php
-                    $customers = mysqli_query($conn,"SELECT * FROM customers");
-                    while($c = mysqli_fetch_assoc($customers)){
+                    $customers = db_query($conn,"SELECT * FROM customers");
+                    while($c = db_fetch_assoc($customers)){
                         $selected = (isset($_GET['customer_id']) && $_GET['customer_id'] == $c['customer_id']) ? 'selected' : '';
                     ?>
                     <option value="<?php echo $c['customer_id']; ?>" <?php echo $selected; ?>>
@@ -329,9 +329,9 @@ if (isset($_POST['record_invoice_payment'])) {
                     <select name="product_id[]" required style="width: 100%;">
                         <option value="">-- Choose Product --</option>
                         <?php
-                        $products = mysqli_query($conn,"SELECT * FROM products WHERE stock_quantity > 0");
+                        $products = db_query($conn,"SELECT * FROM products WHERE stock_quantity > 0");
                         $product_options = "";
-                        while($p = mysqli_fetch_assoc($products)){
+                        while($p = db_fetch_assoc($products)){
                             $opt = "<option value='" . $p['product_id'] . "' data-price='" . $p['price'] . "' data-gst='" . $p['gst_percentage'] . "'>" . htmlspecialchars($p['product_name'], ENT_QUOTES) . " (₹" . $p['price'] . ") - Stock: " . $p['stock_quantity'] . "</option>";
                             echo $opt;
                             $product_options .= $opt;
@@ -480,11 +480,11 @@ function calculateRow(row) {
         <tbody>
             <?php
             $query = "SELECT i.*, c.name FROM invoices i JOIN customers c ON i.customer_id = c.customer_id ORDER BY i.invoice_id DESC";
-            $result = mysqli_query($conn, $query);
-            if(mysqli_num_rows($result) == 0) {
+            $result = db_query($conn, $query);
+            if(db_num_rows($result) == 0) {
                 echo "<tr><td colspan='9' style='text-align:center; color:var(--text-muted); padding:20px;'>No invoices created yet.</td></tr>";
             }
-            while($row = mysqli_fetch_assoc($result)){
+            while($row = db_fetch_assoc($result)){
                 $status_color = '#10B981';
                 $status_bg = 'rgba(16, 185, 129, 0.1)';
                 if ($row['payment_status'] == 'Pending') {
@@ -601,3 +601,4 @@ function closePaymentModal() {
 </script>
 
 <?php include '../includes/footer.php'; ?>
+

@@ -10,13 +10,13 @@ if(isset($_POST['register'])){
     
     // Check if username already exists
     $check_query = "SELECT * FROM users WHERE username='$username'";
-    $check_result = mysqli_query($conn, $check_query);
+    $check_result = db_query($conn, $check_query);
     
-    if(mysqli_num_rows($check_result) > 0) {
+    if(db_num_rows($check_result) > 0) {
         $error = "Username already exists. Please choose another.";
     } else {
         $query = "INSERT INTO users (username, password, role) VALUES ('$username', '$password', '$role')";
-        if(mysqli_query($conn, $query)) {
+        if(db_query($conn, $query)) {
             $_SESSION['register_success'] = "Registration successful! You can now log in.";
             header("Location: login.php");
             exit;
@@ -79,3 +79,4 @@ if(isset($_POST['register'])){
 
 </body>
 </html>
+

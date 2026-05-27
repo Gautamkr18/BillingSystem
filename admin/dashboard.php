@@ -5,39 +5,39 @@ include '../includes/header.php';
 
 // Calculate double-entry statistics
 // 1. Overall Gross Sales
-$gross_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(grand_total) as val FROM invoices"));
+$gross_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as val FROM invoices"));
 $overall_sales = $gross_res['val'] ? floatval($gross_res['val']) : 0.00;
 
 // 2. Today's Gross Sales
-$today_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(grand_total) as val FROM invoices WHERE DATE(invoice_date) = CURRENT_DATE()"));
+$today_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as val FROM invoices WHERE DATE(invoice_date) = CURRENT_DATE()"));
 $today_sales = $today_res['val'] ? floatval($today_res['val']) : 0.00;
 
 // 3. This Month's Revenue
-$month_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(grand_total) as val FROM invoices WHERE MONTH(invoice_date) = MONTH(CURRENT_DATE()) AND YEAR(invoice_date) = YEAR(CURRENT_DATE())"));
+$month_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as val FROM invoices WHERE MONTH(invoice_date) = MONTH(CURRENT_DATE()) AND YEAR(invoice_date) = YEAR(CURRENT_DATE())"));
 $month_revenue = $month_res['val'] ? floatval($month_res['val']) : 0.00;
 
 // 4. Counts
-$total_products = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM products"));
-$total_customers = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM customers"));
-$total_invoices = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM invoices"));
+$total_products = db_num_rows(db_query($conn,"SELECT * FROM products"));
+$total_customers = db_num_rows(db_query($conn,"SELECT * FROM customers"));
+$total_invoices = db_num_rows(db_query($conn,"SELECT * FROM invoices"));
 
 // 5. Low Stock Alert Count
-$low_stock_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM products WHERE stock_quantity <= low_stock_threshold"));
+$low_stock_res = db_fetch_assoc(db_query($conn, "SELECT COUNT(*) as count FROM products WHERE stock_quantity <= low_stock_threshold"));
 $low_stock_count = $low_stock_res['count'];
 
 // 6. Calculate Total Outstanding Dues across all customers
-$dues_res = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(credit_balance) as val FROM customers"));
+$dues_res = db_fetch_assoc(db_query($conn, "SELECT SUM(credit_balance) as val FROM customers"));
 $overall_dues = $dues_res['val'] ? floatval($dues_res['val']) : 0.00;
 
 // 7. Fetch Daily sales of the last 7 days for the dashboard chart
-$weekly_sales = mysqli_query($conn, "SELECT DATE(invoice_date) as sdate, SUM(grand_total) as amt 
+$weekly_sales = db_query($conn, "SELECT DATE(invoice_date) as sdate, SUM(grand_total) as amt 
                                      FROM invoices 
                                      WHERE invoice_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
                                      GROUP BY DATE(invoice_date) 
                                      ORDER BY DATE(invoice_date) ASC");
 $weekly_labels = [];
 $weekly_values = [];
-while($row = mysqli_fetch_assoc($weekly_sales)) {
+while($row = db_fetch_assoc($weekly_sales)) {
     $weekly_labels[] = date('D d M', strtotime($row['sdate']));
     $weekly_values[] = floatval($row['amt']);
 }
@@ -227,11 +227,11 @@ new Chart(weeklyCtx, {
         <tbody>
             <?php
             $query = "SELECT i.*, c.name FROM invoices i JOIN customers c ON i.customer_id = c.customer_id ORDER BY i.invoice_id DESC LIMIT 5";
-            $result = mysqli_query($conn, $query);
-            if(mysqli_num_rows($result) == 0) {
+            $result = db_query($conn, $query);
+            if(db_num_rows($result) == 0) {
                 echo "<tr><td colspan='7' style='text-align:center; color:var(--text-muted); padding:20px;'>No billing transactions logged yet.</td></tr>";
             }
-            while($row = mysqli_fetch_assoc($result)){
+            while($row = db_fetch_assoc($result)){
                 $status_color = '#10B981';
                 $status_bg = 'rgba(16, 185, 129, 0.1)';
                 if ($row['payment_status'] == 'Pending') {
@@ -271,3 +271,4 @@ new Chart(weeklyCtx, {
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

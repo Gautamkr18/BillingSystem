@@ -1,42 +1,14 @@
 services:
-  # 1. PHP Web Application
+  # PHP Web Application with persistent SQLite database
   - type: web
     name: billing-system
     env: docker
-    plan: starter # Starter or standard plan is required if using a persistent volume
+    plan: starter # Note: Starter plan is required on Render if using a persistent disk
     dockerfilePath: Dockerfile
     envVars:
       - key: PORT
         value: 80
-      - key: DB_HOST
-        value: db # Connects to the private database service below
-      - key: DB_USER
-        value: db_user
-      - key: DB_PASSWORD
-        generateValue: true # Generates a secure, random database password
-      - key: DB_NAME
-        value: billing_system
-      - key: DB_PORT
-        value: 3306
-
-  # 2. Private MySQL Database Service
-  - type: private
-    name: db
-    env: docker
-    plan: starter
-    dockerCommand: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    envVars:
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
-      - key: MYSQL_DATABASE
-        value: billing_system
-      - key: MYSQL_USER
-        value: db_user
-      - key: MYSQL_PASSWORD
-        fromService:
-          name: billing-system
-          envVar: DB_PASSWORD
     disk:
-      name: db-data
-      mountPath: /var/lib/mysql
+      name: sqlite-data
+      mountPath: /var/www/html/database
       sizeGB: 1

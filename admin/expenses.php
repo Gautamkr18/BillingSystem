@@ -6,22 +6,22 @@ include '../includes/header.php';
 
 // Handle Add Expense
 if (isset($_POST['add_expense'])) {
-    $expense_name = mysqli_real_escape_string($conn, $_POST['expense_name']);
-    $category = mysqli_real_escape_string($conn, $_POST['category']);
+    $expense_name = db_real_escape_string($conn, $_POST['expense_name']);
+    $category = db_real_escape_string($conn, $_POST['category']);
     $amount = floatval($_POST['amount']);
-    $expense_date = mysqli_real_escape_string($conn, $_POST['expense_date']);
-    $remarks = mysqli_real_escape_string($conn, $_POST['remarks']);
+    $expense_date = db_real_escape_string($conn, $_POST['expense_date']);
+    $remarks = db_real_escape_string($conn, $_POST['remarks']);
     
     if ($amount <= 0) {
         echo "<script>alert('Error: Expense amount must be greater than zero.');</script>";
     } else {
-        mysqli_query($conn, "INSERT INTO expenses (expense_name, category, amount, expense_date, remarks) 
+        db_query($conn, "INSERT INTO expenses (expense_name, category, amount, expense_date, remarks) 
                              VALUES ('$expense_name', '$category', '$amount', '$expense_date', '$remarks')");
         
         // Log Activity
         $username = $_SESSION['username'];
         $uid = $_SESSION['user_id'];
-        mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Add Expense', 'Logged expense $expense_name of ₹$amount')");
+        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Add Expense', 'Logged expense $expense_name of ₹$amount')");
         
         echo "<script>alert('Expense Logged Successfully!'); window.location='expenses.php';</script>";
     }
@@ -30,12 +30,12 @@ if (isset($_POST['add_expense'])) {
 // Handle Delete Expense
 if (isset($_POST['delete_expense'])) {
     $del_id = $_POST['delete_id'];
-    mysqli_query($conn, "DELETE FROM expenses WHERE id='$del_id'");
+    db_query($conn, "DELETE FROM expenses WHERE id='$del_id'");
     
     // Log Activity
     $username = $_SESSION['username'];
     $uid = $_SESSION['user_id'];
-    mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Expense', 'Deleted expense record ID $del_id')");
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Delete Expense', 'Deleted expense record ID $del_id')");
     
     echo "<script>alert('Expense Deleted Successfully'); window.location='expenses.php';</script>";
 }
@@ -105,11 +105,11 @@ if (isset($_POST['delete_expense'])) {
             </thead>
             <tbody>
                 <?php
-                $expenses = mysqli_query($conn, "SELECT * FROM expenses ORDER BY expense_date DESC, id DESC");
-                if (mysqli_num_rows($expenses) == 0) {
+                $expenses = db_query($conn, "SELECT * FROM expenses ORDER BY expense_date DESC, id DESC");
+                if (db_num_rows($expenses) == 0) {
                     echo "<tr><td colspan='5' style='text-align:center; color:var(--text-muted); padding:20px;'>No expenses logged yet.</td></tr>";
                 }
-                while ($row = mysqli_fetch_assoc($expenses)) {
+                while ($row = db_fetch_assoc($expenses)) {
                 ?>
                 <tr>
                     <td><?php echo date('d M Y', strtotime($row['expense_date'])); ?></td>
@@ -139,3 +139,4 @@ if (isset($_POST['delete_expense'])) {
 </div>
 
 <?php include '../includes/footer.php'; ?>
+

@@ -36,7 +36,7 @@ if (isset($_POST['checkout_pos'])) {
             
             if (empty($pid) || $qty <= 0) continue;
             
-            $product = mysqli_fetch_assoc(mysqli_query($conn,"SELECT * FROM products WHERE product_id='$pid'"));
+            $product = db_fetch_assoc(db_query($conn,"SELECT * FROM products WHERE product_id='$pid'"));
             
             if ($product['stock_quantity'] < $qty) {
                 $has_error = true;
@@ -115,8 +115,8 @@ if (isset($_POST['checkout_pos'])) {
         $query = "INSERT INTO invoices (customer_id, subtotal, gst_total, cgst, sgst, igst, discount, round_off, grand_total, payment_method, amount_paid, payment_status)
                   VALUES ('$customer_id', '$total_subtotal', '$exact_gst_total', '$total_cgst', '$total_sgst', '$total_igst', '$bill_discount', '$round_off', '$rounded_grand_total', '$payment_method', '$amount_paid', '$payment_status')";
         
-        if (mysqli_query($conn, $query)) {
-            $invoice_id = mysqli_insert_id($conn);
+        if (db_query($conn, $query)) {
+            $invoice_id = db_insert_id($conn);
             
             // Insert items, deduct stock
             foreach ($invoice_items as $item) {
@@ -129,35 +129,35 @@ if (isset($_POST['checkout_pos'])) {
                 $igst = $item['igst'];
                 $total = $item['total'];
                 
-                mysqli_query($conn,"INSERT INTO invoice_items (invoice_id, product_id, quantity, price, discount, cgst, sgst, igst, total)
+                db_query($conn,"INSERT INTO invoice_items (invoice_id, product_id, quantity, price, discount, cgst, sgst, igst, total)
                                     VALUES ('$invoice_id', '$pid', '$qty', '$price', '$disc', '$cgst', '$sgst', '$igst', '$total')");
                 
-                mysqli_query($conn,"UPDATE products SET stock_quantity = stock_quantity - $qty WHERE product_id='$pid'");
-                mysqli_query($conn,"INSERT INTO inventory_logs(product_id, quantity, type, remarks) VALUES ('$pid', '-$qty', 'OUT', 'POS Sale Inv #$invoice_id')");
+                db_query($conn,"UPDATE products SET stock_quantity = stock_quantity - $qty WHERE product_id='$pid'");
+                db_query($conn,"INSERT INTO inventory_logs(product_id, quantity, type, remarks) VALUES ('$pid', '-$qty', 'OUT', 'POS Sale Inv #$invoice_id')");
             }
             
             // Ledger Entries
-            $cust_name_query = mysqli_query($conn, "SELECT name FROM customers WHERE customer_id='$customer_id'");
-            $cust_data = mysqli_fetch_assoc($cust_name_query);
+            $cust_name_query = db_query($conn, "SELECT name FROM customers WHERE customer_id='$customer_id'");
+            $cust_data = db_fetch_assoc($cust_name_query);
             $customer_name = $cust_data['name'];
             
-            mysqli_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
+            db_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
                                  VALUES ('$customer_id', '$invoice_id', 'DEBIT', '$rounded_grand_total', 'POS Purchase - Invoice #$invoice_id')");
             
             if ($amount_paid > 0) {
-                mysqli_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
+                db_query($conn, "INSERT INTO customer_ledger(customer_id, invoice_id, type, amount, description) 
                                      VALUES ('$customer_id', '$invoice_id', 'CREDIT', '$amount_paid', 'Paid at counter via $payment_method')");
             }
             
             $due_amount = $rounded_grand_total - $amount_paid;
             if ($due_amount > 0) {
-                mysqli_query($conn, "UPDATE customers SET credit_balance = credit_balance + $due_amount WHERE customer_id='$customer_id'");
+                db_query($conn, "UPDATE customers SET credit_balance = credit_balance + $due_amount WHERE customer_id='$customer_id'");
             }
             
             // Activity log
             $username = $_SESSION['username'];
             $uid = $_SESSION['user_id'];
-            mysqli_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'POS Checkout', 'Checkout Invoice #$invoice_id at counter, Total: ₹$rounded_grand_total')");
+            db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'POS Checkout', 'Checkout Invoice #$invoice_id at counter, Total: ₹$rounded_grand_total')");
             
             echo "<script>
                 alert('POS Invoice generated successfully!');
@@ -165,27 +165,27 @@ if (isset($_POST['checkout_pos'])) {
                 window.location='pos.php';
             </script>";
         } else {
-            echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
+            echo "<script>alert('Error: " . db_error($conn) . "');</script>";
         }
     }
 }
 
 // Fetch Customers and Products for dropdowns/renders
-$customers = mysqli_query($conn, "SELECT customer_id, name, phone, gstin FROM customers ORDER BY name ASC");
+$customers = db_query($conn, "SELECT customer_id, name, phone, gstin FROM customers ORDER BY name ASC");
 $all_customers = [];
-while($c = mysqli_fetch_assoc($customers)) {
+while($c = db_fetch_assoc($customers)) {
     $all_customers[] = $c;
 }
 
-$categories_res = mysqli_query($conn, "SELECT DISTINCT category FROM products ORDER BY category ASC");
+$categories_res = db_query($conn, "SELECT DISTINCT category FROM products ORDER BY category ASC");
 $categories = [];
-while($cat = mysqli_fetch_assoc($categories_res)) {
+while($cat = db_fetch_assoc($categories_res)) {
     $categories[] = $cat['category'];
 }
 
-$products_res = mysqli_query($conn, "SELECT * FROM products WHERE stock_quantity > 0 ORDER BY product_name ASC");
+$products_res = db_query($conn, "SELECT * FROM products WHERE stock_quantity > 0 ORDER BY product_name ASC");
 $all_products = [];
-while($p = mysqli_fetch_assoc($products_res)) {
+while($p = db_fetch_assoc($products_res)) {
     $all_products[] = $p;
 }
 ?>
@@ -781,3 +781,4 @@ window.addEventListener('keydown', function(e) {
 </script>
 
 <?php include '../includes/footer.php'; ?>
+
