@@ -193,4 +193,7 @@ function db_affected_rows($conn) {
 function db_free_result($result) {
     // Noop since SQLite releases resource automatically
 }
+
+// Auto-initialize the global database connection variable $conn
+$conn = db_connect();
 ?>
