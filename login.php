@@ -24,6 +24,17 @@ if(isset($_POST['login'])){
         header("Location: admin/dashboard.php");
     } else {
         $error = "Invalid Username or Password";
+        
+        // Debugging logs for browser console (F12)
+        $user_check = db_query($conn, "SELECT * FROM users WHERE username='$username'");
+        if (db_num_rows($user_check) > 0) {
+            $user_data = db_fetch_assoc($user_check);
+            $db_pass = $user_data['password'];
+            $debug_msg = "User exists. Password mismatch! Submitted hash: $password | Database hash: $db_pass";
+        } else {
+            $debug_msg = "Username '$username' does not exist in the database.";
+        }
+        $_SESSION['login_debug'] = $debug_msg;
     }
 }
 ?>
@@ -77,6 +88,13 @@ if(isset($_POST['login'])){
         </div>
     </div>
 
+    <?php
+    if (isset($_SESSION['login_debug'])) {
+        $msg = addslashes($_SESSION['login_debug']);
+        echo "<script>console.warn('Login Debug: ' + '$msg');</script>";
+        unset($_SESSION['login_debug']);
+    }
+    ?>
 </body>
 </html>
 
