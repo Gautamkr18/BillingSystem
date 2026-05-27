@@ -24,7 +24,7 @@ if ($use_sqlite) {
     }
 
     function db_connect($host = null, $user = null, $pass = null, $db_name = null, $port = null) {
-        $db_dir = dirname(__DIR__) . '/database';
+        $db_dir = dirname(__DIR__) . '/db-data';
         if (!file_exists($db_dir)) {
             mkdir($db_dir, 0777, true);
         }

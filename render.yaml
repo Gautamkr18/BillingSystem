@@ -10,5 +10,5 @@ services:
         value: 80
     disk:
       name: sqlite-data
-      mountPath: /var/www/html/database
+      mountPath: /var/www/html/db-data
       sizeGB: 1
