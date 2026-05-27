@@ -3,6 +3,33 @@ include dirname(__DIR__) . '/includes/db.php';
 
 echo "<h2>Starting Database Migration...</h2>";
 
+// Check if base tables exist (by checking if users table exists)
+$table_check = @db_query($conn, "SELECT 1 FROM users LIMIT 1");
+$base_exists = ($table_check !== false);
+
+if (!$base_exists) {
+    echo "Base tables not found. Importing base schema from billing.sql...<br>";
+    $sql_file = __DIR__ . '/billing.sql';
+    if (file_exists($sql_file)) {
+        $sql_content = file_get_contents($sql_file);
+        
+        // Split queries by semicolon and execute them sequentially
+        $queries = explode(';', $sql_content);
+        foreach ($queries as $query) {
+            $query = trim($query);
+            if (!empty($query)) {
+                $res = db_query($conn, $query);
+                if (!$res) {
+                    echo "<span style='color:red;'>Error executing query: " . db_error($conn) . "</span><br>";
+                }
+            }
+        }
+        echo "Base tables imported successfully!<br>";
+    } else {
+        echo "<span style='color:red;'>Error: billing.sql not found at $sql_file</span><br>";
+    }
+}
+
 // Helper function to check if a column exists
 function columnExists($conn, $table, $column) {
     $result = db_query($conn, "SHOW COLUMNS FROM `$table` LIKE '$column'");
