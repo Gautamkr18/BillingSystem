@@ -141,6 +141,7 @@ $edit_data = [
     'product_name' => '',
     'brand' => '',
     'supplier' => '',
+    'price' => '0.00',
     'cost_price' => '0.00',
     'gst_percentage' => '18',
     'stock_quantity' => '0',

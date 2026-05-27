@@ -50,8 +50,20 @@ if ($use_sqlite) {
         $sql = preg_replace('/\bINTEGER\s+AUTO_INCREMENT\s+PRIMARY\s+KEY\b/i', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sql);
         $sql = preg_replace('/\bINTEGER\s+PRIMARY\s+KEY\s+AUTO_INCREMENT\b/i', 'INTEGER PRIMARY KEY AUTOINCREMENT', $sql);
         
-        // Register custom MD5 function for SQLite
+        // MySQL date function translations for SQLite
+        $sql = str_ireplace('CURRENT_DATE()', "date('now')", $sql);
+        $sql = preg_replace('/DATE_SUB\s*\(\s*date\(\s*\'now\'\s*\)\s*,\s*INTERVAL\s+(\d+)\s+DAY\s*\)/i', "date('now', '-\$1 day')", $sql);
+        
+        // Register custom MD5 and date helper functions for SQLite
         $conn->db->createFunction('MD5', 'md5', 1);
+        $conn->db->createFunction('MONTH', function($date_str) {
+            if (!$date_str) return null;
+            return intval(date('m', strtotime($date_str)));
+        }, 1);
+        $conn->db->createFunction('YEAR', function($date_str) {
+            if (!$date_str) return null;
+            return intval(date('Y', strtotime($date_str)));
+        }, 1);
         
         // 2. SHOW COLUMNS FROM table LIKE column -> PRAGMA table_info(table) emulation
         if (preg_match('/SHOW\s+COLUMNS\s+FROM\s+`?([a-zA-Z0-9_]+)`?\s+LIKE\s+\'([a-zA-Z0-9_]+)\'/i', $sql, $matches)) {
