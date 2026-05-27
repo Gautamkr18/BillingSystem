@@ -41,6 +41,10 @@ if (!columnExists($conn, 'users', 'role')) {
     db_query($conn, "ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'admin'");
     echo "Added 'role' to 'users' table.<br>";
 }
+if (!columnExists($conn, 'users', 'phone')) {
+    db_query($conn, "ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT NULL");
+    echo "Added 'phone' column to 'users' table.<br>";
+}
 
 // Ensure role is admin for existing users
 db_query($conn, "UPDATE users SET role = 'admin' WHERE role IS NULL OR role = ''");

@@ -9,19 +9,42 @@ if (isset($_POST['add_user'])) {
     $username = db_real_escape_string($conn, $_POST['username']);
     $password = MD5($_POST['password']);
     $role = db_real_escape_string($conn, $_POST['role']);
+    $phone = db_real_escape_string($conn, $_POST['phone']);
 
-    // Check if user exists
+    // Check if username exists
     $check = db_query($conn, "SELECT * FROM users WHERE username='$username'");
+    // Check if phone number exists
+    $check_phone = db_query($conn, "SELECT * FROM users WHERE phone='$phone'");
+    
     if (db_num_rows($check) > 0) {
         echo "<script>alert('Error: Username already exists.');</script>";
+    } elseif (db_num_rows($check_phone) > 0) {
+        echo "<script>alert('Error: This phone number is already registered.');</script>";
     } else {
-        db_query($conn, "INSERT INTO users (username, password, role) VALUES ('$username', '$password', '$role')");
+        db_query($conn, "INSERT INTO users (username, password, role, phone) VALUES ('$username', '$password', '$role', '$phone')");
         // Log activity
         $admin_name = $_SESSION['username'];
         $admin_id = $_SESSION['user_id'];
         db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Add Staff', 'Added new user $username with role $role')");
         echo "<script>alert('User Added Successfully'); window.location='users.php';</script>";
     }
+}
+
+// Handle Reset Password
+if (isset($_POST['reset_password'])) {
+    $user_id = $_POST['user_id'];
+    $new_pwd = MD5($_POST['new_password']);
+    
+    $u_res = db_query($conn, "SELECT username FROM users WHERE id='$user_id'");
+    $u_data = db_fetch_assoc($u_res);
+    $username = $u_data['username'];
+    
+    db_query($conn, "UPDATE users SET password='$new_pwd' WHERE id='$user_id'");
+    // Log activity
+    $admin_name = $_SESSION['username'];
+    $admin_id = $_SESSION['user_id'];
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$admin_id', '$admin_name', 'Reset Password', 'Changed password for user $username')");
+    echo "<script>alert('Password Reset Successfully for $username'); window.location='users.php';</script>";
 }
 
 // Handle Delete User
@@ -91,6 +114,10 @@ if (isset($_POST['clear_logs'])) {
                 <input type="password" name="password" placeholder="Enter password" required>
             </div>
             <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" name="phone" placeholder="Enter 10-digit mobile number" required>
+            </div>
+            <div class="form-group">
                 <label>System Role</label>
                 <select name="role" required>
                     <option value="cashier">Cashier (Invoicing Only)</option>
@@ -108,6 +135,7 @@ if (isset($_POST['clear_logs'])) {
                 <tr>
                     <th>ID</th>
                     <th>Username</th>
+                    <th>Phone</th>
                     <th>Role</th>
                     <th>Action</th>
                 </tr>
@@ -120,6 +148,7 @@ if (isset($_POST['clear_logs'])) {
                 <tr>
                     <td>#<?php echo $row['id']; ?></td>
                     <td style="font-weight: 600;"><?php echo htmlspecialchars($row['username']); ?></td>
+                    <td style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;"><?php echo htmlspecialchars($row['phone'] ?: 'N/A'); ?></td>
                     <td>
                         <span class="badge" style="padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; 
                             background-color: <?php echo $row['role'] === 'admin' ? 'rgba(79, 70, 229, 0.1)' : 'rgba(16, 185, 129, 0.1)'; ?>; 
@@ -128,7 +157,7 @@ if (isset($_POST['clear_logs'])) {
                         </span>
                     </td>
                     <td>
-                        <div style="display: flex; gap: 8px;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <!-- Edit Role Form -->
                             <form method="POST" style="display: inline-flex; align-items: center; gap: 5px;">
                                 <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
@@ -137,6 +166,13 @@ if (isset($_POST['clear_logs'])) {
                                     <option value="cashier" <?php echo $row['role'] === 'cashier' ? 'selected' : ''; ?>>Cashier</option>
                                 </select>
                                 <input type="hidden" name="update_role" value="1">
+                            </form>
+                            
+                            <!-- Reset Password Form -->
+                            <form method="POST" style="display: inline-flex; align-items: center; gap: 4px;" onsubmit="return confirm('Are you sure you want to reset the password for this staff member?');">
+                                <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
+                                <input type="password" name="new_password" placeholder="New Password" required style="padding: 6px; font-size: 0.85rem; border-radius: 5px; width: 100px; margin:0; border: 1px solid #D1D5DB;">
+                                <button type="submit" name="reset_password" class="btn-primary" style="padding: 6px 10px; font-size: 0.85rem; background-color: #F59E0B; border: none; border-radius: 5px; color:#fff; cursor:pointer;" title="Change Password"><i class="fa-solid fa-key"></i> Reset</button>
                             </form>
                             
                             <!-- Delete Button -->

@@ -278,6 +278,13 @@ if ($use_sqlite) {
     }
 }
 
+// Define global alias to handle any converted mysqli_real_escape_string calls
+if (!function_exists('db_real_escape_string')) {
+    function db_real_escape_string($conn, $str) {
+        return db_escape($conn, $str);
+    }
+}
+
 // Auto-initialize the global database connection variable $conn
 $conn = db_connect();
 ?>

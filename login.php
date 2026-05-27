@@ -81,10 +81,6 @@ if(isset($_POST['login'])){
                 </div>
                 <button type="submit" name="login" class="btn-primary">Sign In</button>
             </form>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <p style="color: #6B7280; font-size: 0.9rem;">Don't have an account? <a href="register.php" style="color: #4F46E5; font-weight: 600; text-decoration: none;">Register</a></p>
-            </div>
         </div>
     </div>
 
