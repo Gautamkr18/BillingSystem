@@ -1,1 +1,1 @@
-# Render installation helper removed.
+# Unused helper. Clear/empty to remove functionality.

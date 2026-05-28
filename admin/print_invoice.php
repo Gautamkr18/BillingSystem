@@ -423,8 +423,6 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
             <a href="<?php echo $whatsapp_url; ?>" target="_blank" class="btn" style="background:#25D366;"><i class="fa-brands fa-whatsapp"></i> Share on WhatsApp</a>
         <?php endif; ?>
         
-        <button class="btn" onclick="sendEmailInvoice(<?php echo $invoice_id; ?>)" style="background:#3B82F6;" <?php echo empty($invoice['email']) ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''; ?>><i class="fa-solid fa-envelope"></i> Email Customer</button>
-        
         <a href="invoices.php" class="btn" style="background: #6B7280;">Back to Invoice Center</a>
     </div>
     
@@ -740,33 +738,6 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
         window.onload = function() {
             window.print();
         };
-
-        // AJAX function to dispatch invoices over email
-        function sendEmailInvoice(invoiceId) {
-            const btn = document.querySelector('button[onclick^="sendEmailInvoice"]');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Dispatching...';
-
-            const formData = new FormData();
-            formData.append('invoice_id', invoiceId);
-
-            fetch('send_email.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            })
-            .catch(error => {
-                alert('An error occurred while sending the email.');
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            });
-        }
     </script>
 </body>
 </html>

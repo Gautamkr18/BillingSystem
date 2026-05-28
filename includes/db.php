@@ -287,4 +287,39 @@ if (!function_exists('db_real_escape_string')) {
 
 // Auto-initialize the global database connection variable $conn
 $conn = db_connect();
+
+// Deduplicate products helper function (extremely robust, database-agnostic, and handles SQLite/MySQL perfectly)
+function db_deduplicate_products($conn) {
+    if (!$conn) return;
+    
+    // Check if products table exists first to avoid errors during initial migration
+    $table_check = @db_query($conn, "SELECT 1 FROM products LIMIT 1");
+    if ($table_check === false) {
+        return;
+    }
+    
+    $res = db_query($conn, "SELECT product_id, product_name FROM products ORDER BY product_id ASC");
+    if ($res) {
+        $seen = [];
+        $to_delete = [];
+        while ($row = db_fetch_assoc($res)) {
+            $normalized_name = strtolower(trim($row['product_name'] ?? ''));
+            if ($normalized_name === '') {
+                continue;
+            }
+            if (in_array($normalized_name, $seen)) {
+                $to_delete[] = $row['product_id'];
+            } else {
+                $seen[] = $normalized_name;
+            }
+        }
+        if (!empty($to_delete)) {
+            $ids = implode(',', $to_delete);
+            db_query($conn, "DELETE FROM products WHERE product_id IN ($ids)");
+        }
+    }
+}
+
+// Automatically heal any duplicate products by name dynamically
+db_deduplicate_products($conn);
 ?>

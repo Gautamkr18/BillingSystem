@@ -1,3 +1,2 @@
 <?php
-// Converter script removed.
-?>
+// Unused convert utility file. Clear/empty to remove functionality.

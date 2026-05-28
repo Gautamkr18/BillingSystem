@@ -110,12 +110,7 @@ if (!columnExists($conn, 'products', 'supplier')) {
 }
 
 // Cleanup any duplicate products (keeping only the unique ones by name)
-global $use_sqlite;
-if ($use_sqlite) {
-    db_query($conn, "DELETE FROM products WHERE product_id NOT IN (SELECT MIN(product_id) FROM products GROUP BY LOWER(TRIM(product_name)))");
-} else {
-    db_query($conn, "DELETE FROM products WHERE product_id NOT IN (SELECT min_id FROM (SELECT MIN(product_id) AS min_id FROM products GROUP BY LOWER(TRIM(product_name))) AS temp)");
-}
+db_deduplicate_products($conn);
 echo "Deduplicated any duplicate products in 'products' table.<br>";
 
 // 4. Upgrade `invoices` table
