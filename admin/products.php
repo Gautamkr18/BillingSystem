@@ -49,6 +49,13 @@ if(isset($_POST['add_product'])){
     $expiry_date = !empty($_POST['expiry_date']) ? "'".$_POST['expiry_date']."'" : "NULL";
     $low_stock = intval($_POST['low_stock']);
     
+    // Prevent duplicate product names
+    $check_exists = db_query($conn, "SELECT product_id FROM products WHERE LOWER(TRIM(product_name)) = LOWER(TRIM('$product_name'))");
+    if ($check_exists && db_num_rows($check_exists) > 0) {
+        echo "<script>alert('Error: A product with the name \"$product_name\" already exists!'); window.location='products.php';</script>";
+        exit();
+    }
+
     // Handle Image Upload
     $image_path = "";
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
@@ -95,6 +102,13 @@ if(isset($_POST['update_product'])){
     $expiry_date = !empty($_POST['expiry_date']) ? "'".$_POST['expiry_date']."'" : "NULL";
     $low_stock = intval($_POST['low_stock']);
     
+    // Prevent duplicate product names on update (excluding itself)
+    $check_exists = db_query($conn, "SELECT product_id FROM products WHERE LOWER(TRIM(product_name)) = LOWER(TRIM('$product_name')) AND product_id != '$update_id'");
+    if ($check_exists && db_num_rows($check_exists) > 0) {
+        echo "<script>alert('Error: A product with the name \"$product_name\" already exists!'); window.location='products.php';</script>";
+        exit();
+    }
+
     // Handle Image Upload
     $image_update_sql = "";
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {

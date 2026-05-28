@@ -228,33 +228,9 @@ if ($prod_count_res) {
 
 if ($prod_count == 0) {
     echo "Seeding default electrical products...<br>";
-    $default_products = [
-        ['Ceiling Fan', 'Electrical', 'pcs', 1200.00],
-        ['Table Lamp', 'Electrical', 'pcs', 250.00],
-        ['LED Bulb (5W)', 'Electrical', 'pcs', 50.00],
-        ['Light Switch', 'Electrical', 'pcs', 30.00],
-        ['Wall Socket', 'Electrical', 'pcs', 20.00],
-        ['Extension Cord', 'Electrical', 'pcs', 150.00],
-        ['Copper Cable 2mm', 'Electrical', 'meter', 200.00],
-        ['Electric Heater', 'Electrical', 'pcs', 3000.00],
-        ['Air Conditioner 1.5 Ton', 'Electrical', 'pcs', 28000.00],
-        ['Power Strip', 'Electrical', 'pcs', 180.00]
-    ];
-    
-    $seeded = 0;
-    foreach ($default_products as $p) {
-        $p_name = db_escape($conn, $p[0]);
-        $category = db_escape($conn, $p[1]);
-        $unit = db_escape($conn, $p[2]);
-        $price = floatval($p[3]);
-        $stock = 150;
-        
-        $query = "INSERT INTO products (product_name, category, unit, price, stock_quantity, gst_percentage, hsn_code) 
-                  VALUES ('$p_name', '$category', '$unit', '$price', '$stock', 18, '8504')";
-        if (db_query($conn, $query)) {
-            $seeded++;
-        }
-    }
+    require_once dirname(__DIR__) . '/includes/products_seed.php';
+    $core_products = array_slice(get_electrical_products(), 0, 10);
+    $seeded = seed_electrical_products($conn, $core_products);
     echo "Successfully seeded $seeded default electrical products!<br>";
 }
 
