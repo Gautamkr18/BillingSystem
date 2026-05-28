@@ -37,6 +37,13 @@ if (isset($_POST['clear_electrical_products'])) {
     echo "<script>alert('Successfully deleted $deleted_count Electrical products from inventory.'); window.location='products.php';</script>";
 }
 
+// Handle Load Electrical Products (via GET from dashboard or POST from button)
+if ((isset($_POST['load_electrical_products']) || isset($_GET['load_electrical'])) && isAdmin()) {
+    require_once '../includes/products_seed.php';
+    $inserted = seed_electrical_products($conn);
+    echo "<script>alert('Added/updated $inserted electrical products with stock 150 each.');window.location='products.php';</script>";
+}
+
 // Handle Delete
 if(isset($_POST['delete_product'])){
     $del_id = $_POST['delete_id'];
@@ -204,9 +211,11 @@ if(isset($_GET['edit']) && isAdmin()){
     <h2 style="margin: 0;">Manage Products & Inventory</h2>
     <?php if (isAdmin()): ?>
         <div style="display: flex; gap: 10px; align-items: center;">
-            <a href="add_electrical_products.php" class="btn-primary" style="background: #4F46E5; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.15);">
-                <i class="fa-solid fa-bolt"></i> Load Electrical Products
-            </a>
+            <form method="POST" style="margin: 0;">
+                <button type="submit" name="load_electrical_products" class="btn-primary" style="background: #4F46E5; border: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.15); cursor: pointer;">
+                    <i class="fa-solid fa-bolt"></i> Load Electrical Products
+                </button>
+            </form>
             <form method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to completely delete all Electrical products from your database? This action is irreversible!');">
                 <button type="submit" name="clear_electrical_products" class="btn-primary" style="background: #EF4444; border: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.15); cursor: pointer;">
                     <i class="fa-solid fa-trash-can"></i> Delete Electrical Products

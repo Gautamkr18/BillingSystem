@@ -70,7 +70,7 @@ if (count($weekly_labels) == 0) {
             <p style="margin: 0; font-size: 0.9rem; color: #4B5563;">Your inventory is currently empty. Get started quickly by loading our pre-defined list of house electrical products.</p>
         </div>
     </div>
-    <a href="add_electrical_products.php" class="btn-primary" style="background: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2); transition: all 0.2s ease;">
+    <a href="products.php?load_electrical=1" class="btn-primary" style="background: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2); transition: all 0.2s ease;">
         <i class="fa-solid fa-bolt"></i> Load Electrical Products
     </a>
 </div>
