@@ -1,6 +1,14 @@
 <?php
 include '../includes/auth.php';
 include '../includes/db.php';
+
+// Check if database tables are migrated, if not, redirect to migrate.php automatically
+$table_check = @db_query($conn, "SELECT 1 FROM users LIMIT 1");
+if ($table_check === false) {
+    header("Location: ../database/migrate.php");
+    exit();
+}
+
 include '../includes/header.php';
 
 // Handle Stock Adjustments (IN or DAMAGE)
@@ -92,7 +100,7 @@ if (isset($_POST['delete_all_products'])) {
     $low_stock_query = "SELECT COUNT(*) as count FROM products WHERE stock_quantity <= low_stock_threshold";
     $low_stock_res = db_query($conn, $low_stock_query);
     $low_stock_data = db_fetch_assoc($low_stock_res);
-    $low_stock_count = $low_stock_data['count'];
+    $low_stock_count = (is_array($low_stock_data) && isset($low_stock_data['count'])) ? intval($low_stock_data['count']) : 0;
     ?>
     <div class="stat-card" style="border-left-color: var(--error); display: flex; align-items: center; gap: 20px; box-sizing: border-box;">
         <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--error); width: 60px; height: 60px;">
@@ -109,7 +117,7 @@ if (isset($_POST['delete_all_products'])) {
     $total_stock_query = "SELECT SUM(stock_quantity) as total FROM products";
     $total_stock_res = db_query($conn, $total_stock_query);
     $total_stock_data = db_fetch_assoc($total_stock_res);
-    $total_stock = $total_stock_data['total'] ? $total_stock_data['total'] : 0;
+    $total_stock = (is_array($total_stock_data) && isset($total_stock_data['total'])) ? intval($total_stock_data['total']) : 0;
     ?>
     <div class="stat-card" style="border-left-color: var(--secondary-color); display: flex; align-items: center; gap: 20px; box-sizing: border-box;">
         <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--secondary-color); width: 60px; height: 60px;">

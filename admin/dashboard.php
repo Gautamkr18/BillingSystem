@@ -1,20 +1,28 @@
 <?php
 include '../includes/auth.php';
 include '../includes/db.php';
+
+// Check if database tables are migrated, if not, redirect to migrate.php automatically
+$table_check = @db_query($conn, "SELECT 1 FROM users LIMIT 1");
+if ($table_check === false) {
+    header("Location: ../database/migrate.php");
+    exit();
+}
+
 include '../includes/header.php';
 
 // Calculate double-entry statistics
 // 1. Overall Gross Sales
 $gross_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as val FROM invoices"));
-$overall_sales = $gross_res['val'] ? floatval($gross_res['val']) : 0.00;
+$overall_sales = (is_array($gross_res) && isset($gross_res['val'])) ? floatval($gross_res['val']) : 0.00;
 
 // 2. Today's Gross Sales
 $today_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as val FROM invoices WHERE DATE(invoice_date) = CURRENT_DATE()"));
-$today_sales = $today_res['val'] ? floatval($today_res['val']) : 0.00;
+$today_sales = (is_array($today_res) && isset($today_res['val'])) ? floatval($today_res['val']) : 0.00;
 
 // 3. This Month's Revenue
 $month_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as val FROM invoices WHERE MONTH(invoice_date) = MONTH(CURRENT_DATE()) AND YEAR(invoice_date) = YEAR(CURRENT_DATE())"));
-$month_revenue = $month_res['val'] ? floatval($month_res['val']) : 0.00;
+$month_revenue = (is_array($month_res) && isset($month_res['val'])) ? floatval($month_res['val']) : 0.00;
 
 // 4. Counts
 $total_products = db_num_rows(db_query($conn,"SELECT * FROM products"));
@@ -23,11 +31,11 @@ $total_invoices = db_num_rows(db_query($conn,"SELECT * FROM invoices"));
 
 // 5. Low Stock Alert Count
 $low_stock_res = db_fetch_assoc(db_query($conn, "SELECT COUNT(*) as count FROM products WHERE stock_quantity <= low_stock_threshold"));
-$low_stock_count = $low_stock_res['count'];
+$low_stock_count = (is_array($low_stock_res) && isset($low_stock_res['count'])) ? intval($low_stock_res['count']) : 0;
 
 // 6. Calculate Total Outstanding Dues across all customers
 $dues_res = db_fetch_assoc(db_query($conn, "SELECT SUM(credit_balance) as val FROM customers"));
-$overall_dues = $dues_res['val'] ? floatval($dues_res['val']) : 0.00;
+$overall_dues = (is_array($dues_res) && isset($dues_res['val'])) ? floatval($dues_res['val']) : 0.00;
 
 // 7. Fetch Daily sales of the last 7 days for the dashboard chart
 $weekly_sales = db_query($conn, "SELECT DATE(invoice_date) as sdate, SUM(grand_total) as amt 
