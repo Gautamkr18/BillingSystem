@@ -84,9 +84,9 @@ foreach ($products as $p) {
     if ($check_res && db_num_rows($check_res) > 0) {
         $row = db_fetch_assoc($check_res);
         $pid = $row['product_id'];
-        $query = "UPDATE products SET price = '$price', stock_quantity = '$stock', category = '$category', unit = '$unit' WHERE product_id = '$pid'";
+        $query = "UPDATE products SET price = '$price', stock_quantity = '$stock', category = '$category', unit = '$unit', gst_percentage = 18, hsn_code = '8504' WHERE product_id = '$pid'";
     } else {
-        $query = "INSERT INTO products (product_name, category, unit, price, stock_quantity) VALUES ('$p_name', '$category', '$unit', '$price', '$stock')";
+        $query = "INSERT INTO products (product_name, category, unit, price, stock_quantity, gst_percentage, hsn_code) VALUES ('$p_name', '$category', '$unit', '$price', '$stock', 18, '8504')";
     }
     
     if (db_query($conn, $query)) {
@@ -94,5 +94,5 @@ foreach ($products as $p) {
     }
 }
 
-echo "<script>alert('Added/updated $inserted electrical products with stock 150 each.');window.location='../admin/reports.php';</script>";
+echo "<script>alert('Added/updated $inserted electrical products with stock 150 each.');window.location='products.php';</script>";
 ?>

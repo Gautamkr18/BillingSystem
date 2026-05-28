@@ -163,8 +163,13 @@ if(isset($_GET['edit']) && isAdmin()){
 }
 ?>
 
-<div class="page-header">
-    <h2>Manage Products & Inventory</h2>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <h2 style="margin: 0;">Manage Products & Inventory</h2>
+    <?php if (isAdmin()): ?>
+        <a href="add_electrical_products.php" class="btn-primary" style="background: #4F46E5; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.15);">
+            <i class="fa-solid fa-bolt"></i> Load Electrical Products
+        </a>
+    <?php endif; ?>
 </div>
 
 <!-- Left Form only shown to Admins -->

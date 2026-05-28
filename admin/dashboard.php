@@ -59,6 +59,23 @@ if (count($weekly_labels) == 0) {
     <div style="font-size:0.9rem; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> Local Time: <strong><?php echo date('d M Y, h:i A'); ?></strong></div>
 </div>
 
+<?php if ($total_products == 0 && isAdmin()): ?>
+<div class="alert-info" style="background: rgba(79, 70, 229, 0.08); color: var(--primary-color); border: 1px solid rgba(79, 70, 229, 0.25); padding: 18px 24px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.05); animation: fadeIn 0.5s ease;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div style="background: rgba(79, 70, 229, 0.15); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 1.3rem;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0 0 4px 0; font-size: 1.05rem; font-weight: 700; color: #1F2937;">Welcome to BillingPro!</h4>
+            <p style="margin: 0; font-size: 0.9rem; color: #4B5563;">Your inventory is currently empty. Get started quickly by loading our pre-defined list of house electrical products.</p>
+        </div>
+    </div>
+    <a href="add_electrical_products.php" class="btn-primary" style="background: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2); transition: all 0.2s ease;">
+        <i class="fa-solid fa-bolt"></i> Load Electrical Products
+    </a>
+</div>
+<?php endif; ?>
+
 <!-- Primary Stats Grid (Gradient Styling) -->
 <div class="dashboard-cards" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
     
