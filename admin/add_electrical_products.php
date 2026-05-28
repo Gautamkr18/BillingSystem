@@ -71,6 +71,9 @@ $products = [
     ['Electrical Product 50', 'Electrical', 'pcs', 149.00]
 ];
 
+// Clean up any pre-existing duplicates in the products table before updating/seeding
+db_query($conn, "DELETE FROM products WHERE product_id NOT IN (SELECT min_id FROM (SELECT MIN(product_id) AS min_id FROM products GROUP BY LOWER(TRIM(product_name))) AS temp)");
+
 $inserted = 0;
 foreach ($products as $p) {
     $p_name = db_escape($conn, $p[0]);
