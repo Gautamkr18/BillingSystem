@@ -14,6 +14,29 @@ if (!file_exists($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
 
+// Handle Clear All Electrical Products
+if (isset($_POST['clear_electrical_products'])) {
+    restrictToAdmin();
+    
+    // Get count of products to delete for logging
+    $count_res = db_query($conn, "SELECT COUNT(*) as count FROM products WHERE LOWER(category) = 'electrical'");
+    $count_row = db_fetch_assoc($count_res);
+    $deleted_count = $count_row['count'];
+    
+    // Delete related inventory logs
+    db_query($conn, "DELETE FROM inventory_logs WHERE product_id IN (SELECT product_id FROM products WHERE LOWER(category) = 'electrical')");
+    
+    // Delete products
+    db_query($conn, "DELETE FROM products WHERE LOWER(category) = 'electrical'");
+    
+    // Log Activity
+    $username = $_SESSION['username'];
+    $uid = $_SESSION['user_id'];
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Clear Electrical', 'Deleted $deleted_count electrical products')");
+    
+    echo "<script>alert('Successfully deleted $deleted_count Electrical products from inventory.'); window.location='products.php';</script>";
+}
+
 // Handle Delete
 if(isset($_POST['delete_product'])){
     $del_id = $_POST['delete_id'];
@@ -180,9 +203,16 @@ if(isset($_GET['edit']) && isAdmin()){
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
     <h2 style="margin: 0;">Manage Products & Inventory</h2>
     <?php if (isAdmin()): ?>
-        <a href="add_electrical_products.php" class="btn-primary" style="background: #4F46E5; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.15);">
-            <i class="fa-solid fa-bolt"></i> Load Electrical Products
-        </a>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="add_electrical_products.php" class="btn-primary" style="background: #4F46E5; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.15);">
+                <i class="fa-solid fa-bolt"></i> Load Electrical Products
+            </a>
+            <form method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to completely delete all Electrical products from your database? This action is irreversible!');">
+                <button type="submit" name="clear_electrical_products" class="btn-primary" style="background: #EF4444; border: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.15); cursor: pointer;">
+                    <i class="fa-solid fa-trash-can"></i> Delete Electrical Products
+                </button>
+            </form>
+        </div>
     <?php endif; ?>
 </div>
 
