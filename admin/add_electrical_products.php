@@ -73,13 +73,25 @@ $products = [
 
 $inserted = 0;
 foreach ($products as $p) {
-    $stmt = $conn->prepare("INSERT INTO products (product_name, category, unit, price, stock_quantity) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE price=VALUES(price), stock_quantity=VALUES(stock_quantity)");
+    $p_name = db_escape($conn, $p[0]);
+    $category = db_escape($conn, $p[1]);
+    $unit = db_escape($conn, $p[2]);
+    $price = floatval($p[3]);
     $stock = 150;
-    $stmt->bind_param("sssdi", $p[0], $p[1], $p[2], $p[3], $stock);
-    if ($stmt->execute()) {
+    
+    // Check if the product already exists to emulate ON DUPLICATE KEY UPDATE cross-platform
+    $check_res = db_query($conn, "SELECT product_id FROM products WHERE product_name = '$p_name'");
+    if ($check_res && db_num_rows($check_res) > 0) {
+        $row = db_fetch_assoc($check_res);
+        $pid = $row['product_id'];
+        $query = "UPDATE products SET price = '$price', stock_quantity = '$stock', category = '$category', unit = '$unit' WHERE product_id = '$pid'";
+    } else {
+        $query = "INSERT INTO products (product_name, category, unit, price, stock_quantity) VALUES ('$p_name', '$category', '$unit', '$price', '$stock')";
+    }
+    
+    if (db_query($conn, $query)) {
         $inserted++;
     }
-    $stmt->close();
 }
 
 echo "<script>alert('Added/updated $inserted electrical products with stock 150 each.');window.location='../admin/reports.php';</script>";
