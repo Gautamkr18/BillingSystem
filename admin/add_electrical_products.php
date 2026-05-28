@@ -80,7 +80,7 @@ foreach ($products as $p) {
     $stock = 150;
     
     // Check if the product already exists to emulate ON DUPLICATE KEY UPDATE cross-platform
-    $check_res = db_query($conn, "SELECT product_id FROM products WHERE product_name = '$p_name'");
+    $check_res = db_query($conn, "SELECT product_id FROM products WHERE LOWER(TRIM(product_name)) = LOWER(TRIM('$p_name'))");
     if ($check_res && db_num_rows($check_res) > 0) {
         $row = db_fetch_assoc($check_res);
         $pid = $row['product_id'];

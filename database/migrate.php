@@ -109,6 +109,10 @@ if (!columnExists($conn, 'products', 'supplier')) {
     echo "Added 'supplier' to 'products' table.<br>";
 }
 
+// Cleanup any duplicate products (keeping only the unique ones by name)
+db_query($conn, "DELETE FROM products WHERE product_id NOT IN (SELECT min_id FROM (SELECT MIN(product_id) AS min_id FROM products GROUP BY LOWER(TRIM(product_name))) AS temp)");
+echo "Deduplicated any duplicate products in 'products' table.<br>";
+
 // 4. Upgrade `invoices` table
 if (!columnExists($conn, 'invoices', 'discount')) {
     db_query($conn, "ALTER TABLE invoices ADD COLUMN discount DECIMAL(10,2) DEFAULT 0.00");
