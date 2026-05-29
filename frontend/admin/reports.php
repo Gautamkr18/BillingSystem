@@ -1,18 +1,51 @@
 <?php
-include '../includes/auth.php';
+include '../../backend/includes/auth.php';
 restrictToAdmin();
-include '../includes/db.php';
+include '../../backend/includes/db.php';
 include '../includes/header.php';
 date_default_timezone_set('Asia/Kolkata'); // Set to server's local timezone
 
-// Reset financial stats (sales only)
+// Reset financial stats
 if (isset($_POST['reset_stats'])) {
-    // Truncate sales tables
-    db_query($conn, "TRUNCATE TABLE invoice_items");
-    db_query($conn, "TRUNCATE TABLE invoices");
-    // Optionally reset activity logs if desired (commented out)
-    // db_query($conn, "TRUNCATE TABLE activity_logs");
-    echo "<script>alert('Sales data has been reset.'); window.location='reports.php';</script>";
+    // Truncate/Delete invoice items
+    @db_query($conn, "TRUNCATE TABLE invoice_items");
+    @db_query($conn, "DELETE FROM invoice_items");
+    
+    // Truncate/Delete invoices
+    @db_query($conn, "TRUNCATE TABLE invoices");
+    @db_query($conn, "DELETE FROM invoices");
+    
+    // Truncate/Delete customer ledger
+    @db_query($conn, "TRUNCATE TABLE customer_ledger");
+    @db_query($conn, "DELETE FROM customer_ledger");
+    
+    // Truncate/Delete expenses
+    @db_query($conn, "TRUNCATE TABLE expenses");
+    @db_query($conn, "DELETE FROM expenses");
+    
+    // Truncate/Delete inventory logs
+    @db_query($conn, "TRUNCATE TABLE inventory_logs");
+    @db_query($conn, "DELETE FROM inventory_logs");
+    
+    // Reset SQLite auto-increments if SQLite is being used
+    @db_query($conn, "DELETE FROM sqlite_sequence WHERE name='invoice_items'");
+    @db_query($conn, "DELETE FROM sqlite_sequence WHERE name='invoices'");
+    @db_query($conn, "DELETE FROM sqlite_sequence WHERE name='customer_ledger'");
+    @db_query($conn, "DELETE FROM sqlite_sequence WHERE name='expenses'");
+    @db_query($conn, "DELETE FROM sqlite_sequence WHERE name='inventory_logs'");
+    
+    // Reset all customer credit balances back to 0.00
+    db_query($conn, "UPDATE customers SET credit_balance = 0.00");
+    
+    // Clear and log activity
+    @db_query($conn, "DELETE FROM activity_logs");
+    @db_query($conn, "DELETE FROM sqlite_sequence WHERE name='activity_logs'");
+    
+    $username = $_SESSION['username'] ?? 'Admin';
+    $uid = $_SESSION['user_id'] ?? 1;
+    db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$uid', '$username', 'Reset Financial Data', 'Reset all sales, invoice lines, expenses, customer ledger, and credit balances')");
+    
+    echo "<script>alert('All financial data has been successfully reset and customer credit balances rebalanced!'); window.location='reports.php';</script>";
     exit;
 }
 
@@ -258,4 +291,3 @@ new Chart(pieCtx, {
 </div>
 
 <?php include '../includes/footer.php'; ?>
-

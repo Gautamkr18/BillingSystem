@@ -1,11 +1,11 @@
 <?php
-include '../includes/auth.php';
-include '../includes/db.php';
+include '../../backend/includes/auth.php';
+include '../../backend/includes/db.php';
 
 // Check if database tables are migrated, if not, redirect to migrate.php automatically
 $table_check = @db_query($conn, "SELECT 1 FROM users LIMIT 1");
 if ($table_check === false) {
-    header("Location: ../database/migrate.php");
+    header("Location: ../../migrate.php");
     exit();
 }
 
@@ -75,12 +75,9 @@ if (count($weekly_labels) == 0) {
         </div>
         <div>
             <h4 style="margin: 0 0 4px 0; font-size: 1.05rem; font-weight: 700; color: #1F2937;">Welcome to BillingPro!</h4>
-            <p style="margin: 0; font-size: 0.9rem; color: #4B5563;">Your inventory is currently empty. Get started quickly by loading our pre-defined list of house electrical products.</p>
+            <p style="margin: 0; font-size: 0.9rem; color: #4B5563;">Your inventory is currently empty. Please navigate to the Products section to add your items and get started!</p>
         </div>
     </div>
-    <a href="products.php?load_electrical=1" class="btn-primary" style="background: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2); transition: all 0.2s ease;">
-        <i class="fa-solid fa-bolt"></i> Load Electrical Products
-    </a>
 </div>
 <?php endif; ?>
 
@@ -296,4 +293,3 @@ new Chart(weeklyCtx, {
 </div>
 
 <?php include '../includes/footer.php'; ?>
-

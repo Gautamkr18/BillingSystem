@@ -1,7 +1,7 @@
 <?php
-include '../includes/auth.php';
+include '../../backend/includes/auth.php';
 restrictToAdmin();
-include '../includes/db.php';
+include '../../backend/includes/db.php';
 include '../includes/header.php';
 
 // Handle Add Expense
@@ -139,4 +139,3 @@ if (isset($_POST['delete_expense'])) {
 </div>
 
 <?php include '../includes/footer.php'; ?>
-

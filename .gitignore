@@ -1,4 +1,5 @@
 # Ignore local environment files containing credentials
 .env
-db-data/billing_system.sqlite
-db-data/sms_logs.txt
+db-data/
+database/db-data/
+database/billing_system.sqlite

@@ -1,0 +1,23 @@
+[2026-05-29 14:54:33] Add Customer request received. POST: name='wqrwre', phone='8750034936', email='etr3wt@gmail.com', ip='::1', ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+[2026-05-29 14:54:33] Attempting SQLite INSERT statement for customer 'wqrwre'...
+[2026-05-29 14:54:33] SQLite INSERT statement completed. New customer created successfully with Row ID #1.
+[2026-05-29 14:56:12] Add Customer request received. POST: name='Gautam kumar Gupta', phone='', email='gautamgupta1315@gmail.com', ip='::1', ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+[2026-05-29 14:56:12] Attempting SQLite INSERT statement for customer 'Gautam kumar Gupta'...
+[2026-05-29 14:56:12] SQLite INSERT statement completed. New customer created successfully with Row ID #1.
+[2026-05-29 15:54:55] Add Customer request received. POST: name='virat', phone='7654321879', email='fsgj@gmail.com', ip='::1', ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+[2026-05-29 15:54:55] Attempting SQLite INSERT statement for customer 'virat'...
+[2026-05-29 15:54:55] SQLite INSERT statement completed. New customer created successfully with Row ID #1.
+[2026-05-29 16:15:04] Add Customer request received. POST: name='Gautam kumar Gupta', phone='7549117172', email='gautamgupta1315@gmail.com', ip='::1', ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+[2026-05-29 16:15:04] Attempting SQLite INSERT statement for customer 'Gautam kumar Gupta'...
+[2026-05-29 16:15:04] SQLite INSERT statement completed. New customer created successfully with Row ID #2.
+[2026-05-29 16:17:13] Add Customer request received. POST: name='himanshu', phone='9389020529', email='himanshu@gmail.com', ip='::1', ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+[2026-05-29 16:17:13] Attempting SQLite INSERT statement for customer 'himanshu'...
+[2026-05-29 16:17:13] SQLite INSERT statement completed. New customer created successfully with Row ID #3.
+[2026-05-29 17:15:00] Add Customer request received. POST: name='RRRR', phone='456665568756', email='rrrr@gmail.com', ip='::1', ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+[2026-05-29 17:15:00] Attempting SQLite INSERT statement for customer 'RRRR'...
+[2026-05-29 17:15:00] SQLite INSERT statement completed. New customer created successfully with Row ID #4.
+[2026-05-29 17:34:51] Add Product request received. name='AC', barcode=''
+[2026-05-29 17:34:51] Product 'AC' added successfully. Row ID #245.
+[2026-05-29 17:36:19] Add Customer request received. POST: name='Praful', phone='7536092711', email='praful@gmail.com', ip='::1', ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36'
+[2026-05-29 17:36:19] Attempting SQLite INSERT statement for customer 'Praful'...
+[2026-05-29 17:36:19] SQLite INSERT statement completed. New customer created successfully with Row ID #5.

@@ -1,6 +1,6 @@
 <?php
-include '../includes/auth.php';
-include '../includes/db.php';
+include '../../backend/includes/auth.php';
+include '../../backend/includes/db.php';
 
 if(!isset($_GET['id'])) {
     die("Invoice ID is required.");
@@ -70,15 +70,13 @@ $whatsapp_text = "🌟 *INVOICE GENERATED - KRISHNA HARDWARE* 🌟\n\n"
                . "🛒 *Items Purchased:*\n"
                . $items_list_text . "\n"
                . "🔗 *View / Print Digital Invoice:*\n"
-               . "http://localhost/billing-system/admin/print_invoice.php?id=" . $invoice_id . "\n\n";
+               . "http://localhost/billing-system/frontend/admin/print_invoice.php?id=" . $invoice_id . "\n\n";
 
 if ($invoice['payment_status'] == 'Pending' || $invoice['payment_status'] == 'Partial') {
     $upi_deep_link = "upi://pay?pa=" . STORE_UPI_ID . "&pn=" . rawurlencode(STORE_MERCHANT_NAME) . "&am=" . number_format($remaining_due, 2, '.', '') . "&cu=INR&tn=Inv-" . str_pad($invoice_id, 6, "0", STR_PAD_LEFT);
-    $whatsapp_qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" . urlencode($upi_deep_link);
     
     $whatsapp_text .= "💳 *Outstanding Due Balance:* ₹" . number_format($remaining_due, 2) . "\n"
-                    . "⚡ *Instant UPI Payment Link (Click to Pay):*\n" . $upi_deep_link . "\n\n"
-                    . "🖼️ *Scan QR Code to Pay:*\n" . $whatsapp_qr_url . "\n\n";
+                    . "⚡ *Instant UPI Payment Link (Click to Pay):*\n" . $upi_deep_link . "\n\n";
 }
 
 $whatsapp_text .= "We appreciate your business! If you have any queries, contact support@krishnahardware.com.\n\n"
@@ -741,4 +739,3 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
     </script>
 </body>
 </html>
-

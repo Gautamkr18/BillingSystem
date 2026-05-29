@@ -1,6 +1,6 @@
 <?php
-include '../includes/auth.php';
-include '../includes/db.php';
+include '../../backend/includes/auth.php';
+include '../../backend/includes/db.php';
 include '../includes/header.php';
 
 // Handle Checkout Submission (Copied from invoices.php but highly optimized for POS checkout)
@@ -379,7 +379,8 @@ while($p = db_fetch_assoc($products_res)) {
     <div style="font-size:0.85rem; color:var(--text-muted);"><i class="fa-solid fa-keyboard"></i> Quick Shortcuts: <strong style="color:var(--primary-color);">[F2]</strong> Focus Search | <strong style="color:var(--primary-color);">[F8]</strong> Pay & Print</div>
 </div>
 
-<form method="POST" id="pos-checkout-form" onsubmit="return validateBeforeCheckout()">
+<form method="POST" id="pos-checkout-form" onsubmit="event.preventDefault(); submitCheckoutForm();">
+    <input type="hidden" name="checkout_pos" value="1">
     <div class="pos-wrapper">
         
         <!-- Left Panel: Products List -->
@@ -498,7 +499,7 @@ while($p = db_fetch_assoc($products_res)) {
                     </div>
                     
                     <div style="display:flex; align-items:end;">
-                        <button type="submit" name="checkout_pos" class="btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:1.05rem; background:var(--primary-color); border-radius:6px; box-shadow: 0 4px 10px rgba(79,70,229,0.2);">
+                        <button type="submit" id="pos-submit-btn" class="btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:1.05rem; background:var(--primary-color); border-radius:6px; box-shadow: 0 4px 10px rgba(79,70,229,0.2);">
                             <i class="fa-solid fa-print"></i> Pay & Print [F8]
                         </button>
                     </div>
@@ -744,13 +745,26 @@ function recalculateCart() {
     document.getElementById('summary-grand-total').textContent = "₹" + roundedGrandTotal.toFixed(2);
 }
 
-// Validate cart empty before form submit
-function validateBeforeCheckout() {
+// Unified submit lock and checkout validation
+let isSubmitted = false;
+
+function submitCheckoutForm() {
+    if (isSubmitted) return;
+    
     if (Object.keys(cart).length === 0) {
         alert('POS Error: Cannot checkout with an empty cart.');
-        return false;
+        return;
     }
-    return true;
+    
+    isSubmitted = true;
+    
+    const btn = document.getElementById('pos-submit-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing [F8]...';
+    }
+    
+    document.getElementById('pos-checkout-form').submit();
 }
 
 // Keyboard shortcuts handlers
@@ -767,18 +781,14 @@ window.addEventListener('keydown', function(e) {
         e.preventDefault();
         const payMethod = document.getElementById('payment_method');
         payMethod.focus();
-        // open select logic is browser-dependent, but focusing gives immediate keyboard access!
     }
     
     // F8 to trigger submit/checkout
     if (e.key === 'F8') {
         e.preventDefault();
-        if (validateBeforeCheckout()) {
-            document.getElementById('pos-checkout-form').submit();
-        }
+        submitCheckoutForm();
     }
 });
 </script>
 
 <?php include '../includes/footer.php'; ?>
-

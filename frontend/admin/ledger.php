@@ -1,6 +1,6 @@
 <?php
-include '../includes/auth.php';
-include '../includes/db.php';
+include '../../backend/includes/auth.php';
+include '../../backend/includes/db.php';
 include '../includes/header.php';
 
 if(!isset($_GET['id'])) {
@@ -179,4 +179,3 @@ if(isset($_POST['record_payment'])){
 </div>
 
 <?php include '../includes/footer.php'; ?>
-

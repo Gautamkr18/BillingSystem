@@ -10,8 +10,8 @@ WORKDIR /var/www/html
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Create uploads and db-data folders and grant initial write permissions
-RUN mkdir -p /var/www/html/uploads /var/www/html/db-data && chown -R www-data:www-data /var/www/html
+# Create uploads and database folders and grant initial write permissions
+RUN mkdir -p /var/www/html/uploads /var/www/html/database && chown -R www-data:www-data /var/www/html
 
 # Expose port 80
 EXPOSE 80

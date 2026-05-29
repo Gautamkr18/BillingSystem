@@ -1,0 +1,10 @@
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Redirect legacy admin URLs to frontend/admin/
+RewriteRule ^admin/(.*)$ frontend/admin/$1 [R=302,L]
+
+# Redirect legacy root portal pages to frontend/
+RewriteRule ^login\.php$ frontend/login.php [R=302,L]
+RewriteRule ^logout\.php$ frontend/logout.php [R=302,L]
+RewriteRule ^register\.php$ frontend/register.php [R=302,L]

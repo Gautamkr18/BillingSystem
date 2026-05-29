@@ -1,5 +1,5 @@
 <?php
-include dirname(__DIR__) . '/includes/db.php';
+include __DIR__ . '/backend/includes/db.php';
 
 echo "<h2>Starting Database Migration...</h2>";
 
@@ -8,26 +8,64 @@ $table_check = @db_query($conn, "SELECT 1 FROM users LIMIT 1");
 $base_exists = ($table_check !== false);
 
 if (!$base_exists) {
-    echo "Base tables not found. Importing base schema from billing.sql...<br>";
-    $sql_file = __DIR__ . '/billing.sql';
-    if (file_exists($sql_file)) {
-        $sql_content = file_get_contents($sql_file);
-        
-        // Split queries by semicolon and execute them sequentially
-        $queries = explode(';', $sql_content);
-        foreach ($queries as $query) {
-            $query = trim($query);
-            if (!empty($query)) {
-                $res = db_query($conn, $query);
-                if (!$res) {
-                    echo "<span style='color:red;'>Error executing query: " . db_error($conn) . "</span><br>";
-                }
+    echo "Base tables not found. Creating base schema...<br>";
+    $sql_content = "
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+INSERT INTO users(username,password)
+VALUES('admin', MD5('admin123'));
+
+CREATE TABLE IF NOT EXISTS customers (
+    customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    address TEXT
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(100),
+    price DECIMAL(10,2),
+    gst_percentage INT,
+    stock_quantity INT
+);
+
+CREATE TABLE IF NOT EXISTS invoices (
+    invoice_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    subtotal DECIMAL(10,2),
+    gst_total DECIMAL(10,2),
+    grand_total DECIMAL(10,2),
+    invoice_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS invoice_items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id INT,
+    product_id INT,
+    quantity INT,
+    price DECIMAL(10,2),
+    gst DECIMAL(10,2),
+    total DECIMAL(10,2)
+);";
+    
+    // Split queries by semicolon and execute them sequentially
+    $queries = explode(';', $sql_content);
+    foreach ($queries as $query) {
+        $query = trim($query);
+        if (!empty($query)) {
+            $res = db_query($conn, $query);
+            if (!$res) {
+                echo "<span style='color:red;'>Error executing query: " . db_error($conn) . "</span><br>";
             }
         }
-        echo "Base tables imported successfully!<br>";
-    } else {
-        echo "<span style='color:red;'>Error: billing.sql not found at $sql_file</span><br>";
     }
+    echo "Base tables imported successfully!<br>";
 }
 
 // Helper function to check if a column exists
@@ -57,6 +95,14 @@ if (db_num_rows($cashier_check) == 0) {
     echo "Inserted default cashier user ('cashier' / 'cashier123').<br>";
 }
 
+// Ensure existing staff duplicates are healed/merged before applying unique indexes
+db_deduplicate_users($conn);
+echo "Deduplicated any existing duplicate staff members.<br>";
+
+// Enforce database-level uniqueness for usernames using partial SQLite indexes
+db_query($conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username) WHERE username IS NOT NULL AND username != ''");
+echo "Enforced SQLite unique constraints on user usernames.<br>";
+
 // 2. Upgrade `customers` table
 if (!columnExists($conn, 'customers', 'gstin')) {
     db_query($conn, "ALTER TABLE customers ADD COLUMN gstin VARCHAR(15) DEFAULT NULL");
@@ -66,6 +112,15 @@ if (!columnExists($conn, 'customers', 'credit_balance')) {
     db_query($conn, "ALTER TABLE customers ADD COLUMN credit_balance DECIMAL(10,2) DEFAULT 0.00");
     echo "Added 'credit_balance' to 'customers' table.<br>";
 }
+
+// Ensure existing customer duplicates are healed/merged before applying unique indexes
+db_deduplicate_customers($conn);
+echo "Deduplicated any existing duplicate customers.<br>";
+
+// Enforce database-level uniqueness for phone and email using partial SQLite indexes
+db_query($conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone) WHERE phone IS NOT NULL AND phone != ''");
+db_query($conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_email ON customers(email) WHERE email IS NOT NULL AND email != ''");
+echo "Enforced SQLite-level unique constraints on customer phone and email.<br>";
 
 // 3. Upgrade `products` table
 if (!columnExists($conn, 'products', 'cost_price')) {
@@ -218,23 +273,6 @@ db_query($conn, "CREATE TABLE IF NOT EXISTS customer_ledger (
 )");
 echo "Ensured 'customer_ledger' table exists.<br>";
 
-// 10. Automatically seed sample electrical products if the products table is empty
-$prod_count_res = db_query($conn, "SELECT COUNT(*) as count FROM products");
-$prod_count = 0;
-if ($prod_count_res) {
-    $row = db_fetch_assoc($prod_count_res);
-    $prod_count = intval($row['count']);
-}
-
-if ($prod_count == 0) {
-    echo "Seeding default electrical products...<br>";
-    require_once dirname(__DIR__) . '/includes/products_seed.php';
-    $core_products = array_slice(get_electrical_products(), 0, 10);
-    $seeded = seed_electrical_products($conn, $core_products);
-    echo "Successfully seeded $seeded default electrical products!<br>";
-}
-
 echo "<h3>Database Migration Completed Successfully!</h3>";
-echo "<a href='../admin/dashboard.php'>Go to Dashboard</a>";
+echo "<a href='frontend/admin/dashboard.php'>Go to Dashboard</a>";
 ?>
-

@@ -1,6 +1,6 @@
 <?php
-include '../includes/auth.php';
-include '../includes/db.php';
+include '../../backend/includes/auth.php';
+include '../../backend/includes/db.php';
 include '../includes/header.php';
 
 // Handle Delete (Admin Only)
@@ -270,7 +270,8 @@ if (isset($_POST['record_invoice_payment'])) {
 <div class="card-form">
     <h3><i class="fa-solid fa-file-invoice"></i> Generate Custom GST Invoice</h3>
     <br>
-    <form method="POST">
+    <form method="POST" id="invoice-form" onsubmit="return submitInvoiceForm(event);">
+        <input type="hidden" name="create_invoice" value="1">
         <!-- Client Selection & Settings Grid -->
         <div class="form-grid" style="grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <div class="form-group" style="margin-bottom: 0;">
@@ -366,7 +367,7 @@ if (isset($_POST['record_invoice_payment'])) {
         
         <hr style="border:0; border-top:1px solid #eee; margin: 20px 0;">
         
-        <button type="submit" name="create_invoice" class="btn-primary"><i class="fa-solid fa-receipt"></i> Generate GST Invoice</button>
+        <button type="submit" id="invoice-submit-btn" class="btn-primary"><i class="fa-solid fa-receipt"></i> Generate GST Invoice</button>
     </form>
 </div>
 
@@ -454,6 +455,21 @@ function calculateRow(row) {
     const total = positiveSubtotal + tax;
     
     subtotalPreview.value = "₹" + total.toFixed(2);
+}
+
+let isSubmitted = false;
+function submitInvoiceForm(event) {
+    if (isSubmitted) {
+        event.preventDefault();
+        return false;
+    }
+    isSubmitted = true;
+    const btn = document.getElementById('invoice-submit-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating GST Invoice...';
+    }
+    return true;
 }
 </script>
 
@@ -561,8 +577,9 @@ function calculateRow(row) {
     <div class="card-form" style="background:#fff; border-radius:12px; max-width:400px; width:100%; margin:auto; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.2); box-sizing:border-box;">
         <h3 style="margin-top:0; color:var(--primary-color);"><i class="fa-solid fa-indian-rupee-sign"></i> Record Dues Payment</h3>
         <br>
-        <form method="POST">
+        <form method="POST" id="dues-payment-form" onsubmit="return submitDuesForm(event);">
             <input type="hidden" name="pay_invoice_id" id="modal_invoice_id">
+            <input type="hidden" name="record_invoice_payment" value="1">
             <div class="form-group" style="margin-bottom:15px;">
                 <label>Remaining Dues: <strong id="modal_due_text" style="color:var(--error); font-size:1.1rem;">₹0.00</strong></label>
             </div>
@@ -580,7 +597,7 @@ function calculateRow(row) {
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px;">
                 <button type="button" class="btn-primary" style="background:#6B7280; padding: 8px 16px; font-size: 0.9rem;" onclick="closePaymentModal()">Cancel</button>
-                <button type="submit" name="record_invoice_payment" class="btn-primary" style="background:#10B981; padding: 8px 16px; font-size: 0.9rem;">Save Payment</button>
+                <button type="submit" id="dues-submit-btn" class="btn-primary" style="background:#10B981; padding: 8px 16px; font-size: 0.9rem;">Save Payment</button>
             </div>
         </form>
     </div>
@@ -598,7 +615,21 @@ function openPaymentModal(invoiceId, remainingDue) {
 function closePaymentModal() {
     document.getElementById('payment-modal').style.display = 'none';
 }
+
+let isDuesSubmitted = false;
+function submitDuesForm(event) {
+    if (isDuesSubmitted) {
+        event.preventDefault();
+        return false;
+    }
+    isDuesSubmitted = true;
+    const btn = document.getElementById('dues-submit-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    }
+    return true;
+}
 </script>
 
 <?php include '../includes/footer.php'; ?>
-

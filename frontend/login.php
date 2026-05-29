@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'includes/db.php';
+include '../backend/includes/db.php';
 
 if(isset($_POST['login'])){
 
@@ -93,4 +93,3 @@ if(isset($_POST['login'])){
     ?>
 </body>
 </html>
-

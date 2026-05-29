@@ -1,11 +1,11 @@
 <?php
-include '../includes/auth.php';
-include '../includes/db.php';
+include '../../backend/includes/auth.php';
+include '../../backend/includes/db.php';
 
 // Check if database tables are migrated, if not, redirect to migrate.php automatically
 $table_check = @db_query($conn, "SELECT 1 FROM users LIMIT 1");
 if ($table_check === false) {
-    header("Location: ../database/migrate.php");
+    header("Location: ../../migrate.php");
     exit();
 }
 
@@ -60,9 +60,10 @@ if (isset($_POST['adjust_stock'])) {
         }
     }
 }
-// Handle product deletion
 
+// Handle product deletion
 if (isset($_POST['delete_product'])) {
+    restrictToAdmin();
     $del_id = $_POST['delete_product'];
     // Delete product from products table
     $del_res = db_query($conn, "DELETE FROM products WHERE product_id='$del_id'");
@@ -79,6 +80,7 @@ if (isset($_POST['delete_product'])) {
 
 // Delete all products
 if (isset($_POST['delete_all_products'])) {
+    restrictToAdmin();
     // Delete all rows from products
     db_query($conn, "DELETE FROM products");
     // Clean related logs
@@ -86,7 +88,6 @@ if (isset($_POST['delete_all_products'])) {
     db_query($conn, "DELETE FROM activity_logs");
     echo "<script>alert('All products deleted successfully.'); window.location='inventory.php';</script>"; exit;
 }
-
 ?>
 
 <div class="page-header">
@@ -132,54 +133,65 @@ if (isset($_POST['delete_all_products'])) {
 
 <div class="form-grid" style="grid-template-columns: 2fr 1fr; gap: 30px; align-items: start;">
     
-    <!-- Left Column: Low Stock Alerts Table & General List -->
+    <!-- Left Column: Low Stock Alerts Table -->
     <div class="table-container">
         <h3 style="padding: 20px 20px 0 20px; margin: 0; color: var(--error);"><i class="fa-solid fa-triangle-exclamation"></i> Low Stock Alerts</h3>
-        <span style="font-size:0.85rem; color:var(--text-muted); padding: 0 20px; display:block; margin-top:5px;">Products below minimum stock safety thresholds</span>
-        <br>
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Product</th>
                     <th>Category</th>
-                    <th>Threshold</th>
                     <th>Current Stock</th>
+                    <th>Threshold</th>
                     <th>Status</th>
+                    <?php if (isAdmin()): ?>
+                    <th>Action</th>
+                    <?php endif; ?>
                 </tr>
             </thead>
             <tbody>
                 <?php
-                $low_stock_items = db_query($conn, "SELECT * FROM products WHERE stock_quantity <= low_stock_threshold ORDER BY stock_quantity ASC");
-                if (db_num_rows($low_stock_items) == 0) {
-                    echo "<tr><td colspan='5' style='text-align:center; color:#10B981; font-weight:bold; padding:25px;'>All products are safely above stock thresholds!</td></tr>";
+                $alerts = db_query($conn, "SELECT product_id, product_name, category, stock_quantity, low_stock_threshold, unit FROM products WHERE stock_quantity <= low_stock_threshold ORDER BY stock_quantity ASC");
+                $colspan = isAdmin() ? 6 : 5;
+                if(db_num_rows($alerts) == 0) {
+                    echo "<tr><td colspan='$colspan' style='text-align:center;'>No alerts at the moment.</td></tr>";
                 }
-                while ($item = db_fetch_assoc($low_stock_items)) {
+                while($a = db_fetch_assoc($alerts)) {
+                    $stock_class = "color: #EF4444; font-weight: bold;";
+                    $stock_status = "Out of Stock";
+                    if ($a['stock_quantity'] > 0) {
+                        $stock_class = "color: #F59E0B; font-weight: bold;";
+                        $stock_status = "Low Stock";
+                    }
                 ?>
                 <tr>
-                    <td style="font-weight: 600;"><?php echo htmlspecialchars($item['product_name']); ?></td>
-                    <td><?php echo htmlspecialchars($item['category']); ?></td>
-                    <td><?php echo $item['low_stock_threshold']; ?> <?php echo htmlspecialchars($item['unit']); ?></td>
-                    <td style="font-weight: bold; color: <?php echo $item['stock_quantity'] == 0 ? 'var(--error)' : 'var(--warning)'; ?>;">
-                        <?php echo $item['stock_quantity']; ?> <?php echo htmlspecialchars($item['unit']); ?>
-                    </td>
+                    <td style="font-weight: 600; color: var(--text-main);"><?php echo htmlspecialchars($a['product_name']); ?></td>
                     <td>
-                        <span class="badge" style="padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; 
-                            background-color: <?php echo $item['stock_quantity'] == 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)'; ?>;
-                            color: <?php echo $item['stock_quantity'] == 0 ? 'var(--error)' : '#D97706'; ?>;">
-                            <?php echo $item['stock_quantity'] == 0 ? 'OUT' : 'LOW'; ?>
+                        <span class="badge" style="padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #F3F4F6; color: #4B5563;">
+                            <?php echo htmlspecialchars($a['category']); ?>
                         </span>
-                    </td><td><form method="POST" style="display:inline;"><input type="hidden" name="delete_product" value="<?php echo $item['product_id']; ?>"><button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button></form></td>
+                    </td>
+                    <td style="<?php echo $stock_class; ?>"><?php echo $a['stock_quantity'] . ' ' . $a['unit']; ?></td>
+                    <td><?php echo $a['low_stock_threshold']; ?></td>
+                    <td><span style="<?php echo $stock_class; ?>"><?php echo $stock_status; ?></span></td>
+                    <?php if (isAdmin()): ?>
+                    <td>
+                        <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                            <input type="hidden" name="delete_product" value="<?php echo $a['product_id']; ?>">
+                            <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background-color: #EF4444;"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </form>
+                    </td>
+                    <?php endif; ?>
                 </tr>
                 <?php } ?>
             </tbody>
         </table>
     </div>
 
-    <!-- Right Column: Stock Adjustments Quick Action Form -->
-    <div class="card-form" style="margin-bottom: 0;">
-        <h3><i class="fa-solid fa-sliders"></i> Stock Adjustment</h3>
-        <br>
-        <form method="POST">
+    <!-- Right Column: Adjustment Form -->
+    <div class="table-container">
+        <h3 style="padding: 20px 20px 0 20px; margin: 0; color: var(--primary);"><i class="fa-solid fa-pen-to-square"></i> Adjust Stock</h3>
+        <form method="POST" style="padding: 20px;">
             <div class="form-group">
                 <label>Select Product</label>
                 <select name="product_id" required style="width: 100%;">
@@ -196,46 +208,73 @@ if (isset($_POST['delete_all_products'])) {
             </div>
             
             <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" name="quantity" required min="1" style="width: 100%;">
+            </div>
+
+            <div class="form-group">
                 <label>Adjustment Type</label>
-                <select name="adj_type" required>
-                    <option value="IN">Stock In (Purchase/Restock)</option>
-                    <option value="DAMAGE">Stock Out (Damaged/Write-off)</option>
+                <select name="adj_type" required style="width: 100%;">
+                    <option value="IN">Stock IN (Restock)</option>
+                    <option value="DAMAGE">Stock OUT (Damage/Waste)</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Quantity</label>
-                <input type="number" name="quantity" placeholder="Quantity to adjust" min="1" required>
+                <label>Remarks</label>
+                <input type="text" name="remarks" placeholder="Optional notes..." style="width: 100%;">
             </div>
 
-            <div class="form-group">
-                <label>Remarks / Notes</label>
-                <input type="text" name="remarks" placeholder="e.g. Purchase Inv #104 or Vendor return" required>
-            </div>
-
-            <button type="submit" name="adjust_stock" class="btn-primary" style="width: 100%; justify-content: center;"><i class="fa-solid fa-save"></i> Save Adjustment</button>
+            <button type="submit" name="adjust_stock" class="btn" style="width: 100%; background: var(--primary); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600;">
+                Save Adjustment
+            </button>
         </form>
     </div>
 </div>
 
-<!-- All Products Section (Full Width Below for optimal space and layout aesthetics) -->
+<!-- All Products Section (Full Width Below) -->
 <div class="table-container" style="margin-top: 30px;">
-    <h3 style="padding:20px 20px 0 20px; margin:0; color: var(--primary);"><i class="fa-solid fa-box"></i> All Products</h3>
-    <a href="products.php" class="btn btn-success" style="margin:10px;">Add New Product</a>
+    <h3 style="padding: 20px; margin: 0; color: var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <span><i class="fa-solid fa-box"></i> All Products</span>
+        <span style="display: flex; gap: 10px; align-items: center;">
+            <a href="products.php" class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-plus-circle"></i> Add New Product</a>
+            <?php if (isAdmin()): ?>
+            <form method="POST" style="display:inline;" onsubmit="return confirm('WARNING: This will permanently delete ALL products and associated logs! Are you sure?');">
+                <button type="submit" name="delete_all_products" class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem; background-color: #EF4444; border-radius: 6px; border: none; cursor: pointer;"><i class="fa-solid fa-trash-can"></i> Delete All Products</button>
+            </form>
+            <?php endif; ?>
+        </span>
+    </h3>
     <table class="data-table">
         <thead>
             <tr>
-                <th>Product</th>
+                <th>Product Name</th>
                 <th>Category</th>
-                <th>Stock</th>
+                <th>Stock Status</th>
+                <th>Current Stock</th>
                 <th>Unit</th>
+                <?php if (isAdmin()): ?>
                 <th>Action</th>
+                <?php endif; ?>
             </tr>
         </thead>
         <tbody>
             <?php
             $all_products = db_query($conn, "SELECT * FROM products ORDER BY product_name ASC");
+            if (db_num_rows($all_products) == 0) {
+                $colspan = isAdmin() ? 6 : 5;
+                echo "<tr><td colspan='$colspan' style='text-align:center; color:var(--text-muted); padding:20px;'>No products in inventory.</td></tr>";
+            }
             while($p = db_fetch_assoc($all_products)) {
+                $stock_class = "color: #10B981; font-weight: bold;";
+                $stock_status = "In Stock";
+                if ($p['stock_quantity'] <= 0) {
+                    $stock_class = "color: #EF4444; font-weight: bold;";
+                    $stock_status = "Out of Stock";
+                } else if ($p['stock_quantity'] <= $p['low_stock_threshold']) {
+                    $stock_class = "color: #F59E0B; font-weight: bold;";
+                    $stock_status = "Low Stock";
+                }
             ?>
             <tr>
                 <td style="font-weight: 600; color: var(--text-main);"><?php echo htmlspecialchars($p['product_name']); ?></td>
@@ -244,35 +283,37 @@ if (isset($_POST['delete_all_products'])) {
                         <?php echo htmlspecialchars($p['category']); ?>
                     </span>
                 </td>
+                <td>
+                    <span style="<?php echo $stock_class; ?>"><?php echo $stock_status; ?></span>
+                </td>
                 <td style="font-weight: bold; color: var(--primary-color);"><?php echo $p['stock_quantity']; ?></td>
                 <td><?php echo htmlspecialchars($p['unit']); ?></td>
+                <?php if (isAdmin()): ?>
                 <td>
-                    <form method="POST" style="display:inline;">
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
                         <input type="hidden" name="delete_product" value="<?php echo $p['product_id']; ?>">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this product?');">Delete</button>
+                        <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background-color: #EF4444;"><i class="fa-solid fa-trash"></i> Delete</button>
                     </form>
                 </td>
+                <?php endif; ?>
             </tr>
-            <?php }
-            ?>
+            <?php } ?>
         </tbody>
     </table>
 </div>
 
-<!-- Bottom Section: Detailed Audit Stock Logs -->
-<div class="page-header" style="margin-top: 40px;">
-    <h2>Stock Movement Ledger Logs</h2>
-</div>
-
-<div class="table-container">
+<!-- Stock Activity Log Section (Full Width Below) -->
+<div class="table-container" style="margin-top: 30px;">
+    <h3 style="padding: 20px; margin: 0; color: var(--primary);"><i class="fa-solid fa-history"></i> Recent Stock Activity Log</h3>
     <table class="data-table">
         <thead>
             <tr>
-                <th>Timestamp</th>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Type</th>
-                <th>New Stock</th>
+                <th>Date & Time</th>
+                <th>Product Name</th>
+                <th>Adjustment Qty</th>
+                <th>Activity Type</th>
+                <th>Remaining Stock</th>
+                <th>Remarks/Notes</th>
             </tr>
         </thead>
         <tbody>
@@ -280,7 +321,7 @@ if (isset($_POST['delete_all_products'])) {
             $query = "SELECT l.*, p.product_name, p.unit, p.stock_quantity FROM inventory_logs l JOIN products p ON l.product_id = p.product_id ORDER BY l.id DESC LIMIT 50";
             $log_res = db_query($conn, $query);
             if(db_num_rows($log_res) == 0) {
-                echo "<tr><td colspan='5' style='text-align:center; color:var(--text-muted); padding:20px;'>No stock logs available yet.</td></tr>";
+                echo "<tr><td colspan='6' style='text-align:center; color:var(--text-muted); padding:20px;'>No stock logs available yet.</td></tr>";
             }
             while($row = db_fetch_assoc($log_res)) {
                 $type_color = "var(--secondary-color)";
@@ -305,6 +346,7 @@ if (isset($_POST['delete_all_products'])) {
                     </span>
                 </td>
                 <td style="font-size:0.9rem; color:#4B5563;"><?php echo $row['stock_quantity']; ?> <?php echo htmlspecialchars($row['unit']); ?></td>
+                <td style="color: var(--text-muted); font-size: 0.9rem;"><?php echo htmlspecialchars($row['remarks'] ?? ''); ?></td>
             </tr>
             <?php } ?>
         </tbody>

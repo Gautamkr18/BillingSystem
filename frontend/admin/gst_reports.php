@@ -1,7 +1,7 @@
 <?php
-include '../includes/auth.php';
+include '../../backend/includes/auth.php';
 restrictToAdmin();
-include '../includes/db.php';
+include '../../backend/includes/db.php';
 include '../includes/header.php';
 
 // Calculate overall tax collected
@@ -207,4 +207,3 @@ if (isset($_GET['download_gstr1'])) {
 </div>
 
 <?php include '../includes/footer.php'; ?>
-
