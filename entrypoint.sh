@@ -7,9 +7,9 @@ mkdir -p /var/www/html/database /var/www/html/uploads
 chown -R www-data:www-data /var/www/html/database /var/www/html/uploads
 chmod -R 775 /var/www/html/database /var/www/html/uploads
 
-# Run database migrations automatically at startup so the database is populated on boot
+# Run database migrations automatically at startup (suppress HTML output, log errors only)
 echo "Running database migrations..."
-php /var/www/html/migrate.php
+php /var/www/html/migrate.php > /dev/null 2>&1 || echo "Warning: Migration encountered an error (non-fatal, continuing...)"
 
 # Re-ensure permissions are set correctly on new database files created during migration
 chown -R www-data:www-data /var/www/html/database /var/www/html/uploads

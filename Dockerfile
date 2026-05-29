@@ -1,5 +1,19 @@
 FROM php:8.2-apache
 
+# Enable Apache mod_rewrite (required for .htaccess redirect rules)
+RUN a2enmod rewrite
+
+# Install PHP sqlite3 extension (required for SQLite database)
+RUN docker-php-ext-install pdo pdo_sqlite \
+    && apt-get update && apt-get install -y libsqlite3-dev \
+    && docker-php-ext-enable pdo_sqlite
+
+# Set AllowOverride All so .htaccess rules are respected
+RUN sed -i 's|AllowOverride None|AllowOverride All|g' /etc/apache2/apache2.conf
+
+# Copy custom Apache virtual host config (enables AllowOverride All and mod_rewrite for .htaccess)
+COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
+
 # Copy the entire project directory into the Apache document root
 COPY . /var/www/html/
 
