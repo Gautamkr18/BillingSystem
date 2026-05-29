@@ -3,10 +3,9 @@ FROM php:8.2-apache
 # Enable Apache mod_rewrite (required for .htaccess redirect rules)
 RUN a2enmod rewrite
 
-# Install PHP sqlite3 extension (required for SQLite database)
-RUN docker-php-ext-install pdo pdo_sqlite \
-    && apt-get update && apt-get install -y libsqlite3-dev \
-    && docker-php-ext-enable pdo_sqlite
+# Install system dependency first, then PHP sqlite3 extension
+RUN apt-get update && apt-get install -y libsqlite3-dev \
+    && docker-php-ext-install pdo pdo_sqlite
 
 # Set AllowOverride All so .htaccess rules are respected
 RUN sed -i 's|AllowOverride None|AllowOverride All|g' /etc/apache2/apache2.conf
