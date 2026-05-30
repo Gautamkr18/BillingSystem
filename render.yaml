@@ -1,14 +1,23 @@
 services:
-  # PHP Web Application with persistent SQLite database
+  # PHP Web Application — uses PostgreSQL on Render, SQLite locally
   - type: web
     name: billing-system
     env: docker
-    plan: starter # Note: Starter plan is required on Render if using a persistent disk
+    plan: free
     dockerfilePath: Dockerfile
     envVars:
       - key: PORT
         value: 80
-    disk:
-      name: sqlite-data
-      mountPath: /var/www/html/database
-      sizeGB: 1
+      # DATABASE_URL is automatically injected from the free PostgreSQL database below
+      - key: DATABASE_URL
+        fromDatabase:
+          name: billing-system-db
+          property: connectionString
+
+databases:
+  # Free PostgreSQL database (persistent — survives container restarts)
+  # Note: Render free databases expire after 90 days — recreate and run /migrate.php to restore schema
+  - name: billing-system-db
+    plan: free
+    databaseName: billing_system
+    user: billing_user
