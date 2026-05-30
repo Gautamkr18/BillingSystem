@@ -1,15 +1,17 @@
 #!/bin/bash
 set -e
 
-# Fix permissions on writable directories
-echo "Fixing permissions..."
+# Ensure database and uploads folders exist
 mkdir -p /var/www/html/uploads /var/www/html/database
-chown -R www-data:www-data /var/www/html/uploads /var/www/html/database
-chmod -R 775 /var/www/html/uploads /var/www/html/database
 
-# Run database migrations (creates/upgrades schema in PostgreSQL or SQLite)
+# Run database migrations BEFORE fixing permissions
 echo "Running database migrations..."
 php /var/www/html/migrate.php > /dev/null 2>&1 || echo "Warning: Migration encountered an error (non-fatal, continuing...)"
+
+# Fix permissions so Apache (www-data) can write to SQLite and uploads
+echo "Fixing permissions..."
+chown -R www-data:www-data /var/www/html/uploads /var/www/html/database
+chmod -R 775 /var/www/html/uploads /var/www/html/database
 
 # Start Apache
 echo "Starting Apache..."
