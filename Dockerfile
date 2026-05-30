@@ -13,15 +13,8 @@ RUN sed -i 's|AllowOverride None|AllowOverride All|g' /etc/apache2/apache2.conf
 # Copy custom Apache virtual host config
 COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
 
-# Install Litestream
-ADD https://github.com/benbjohnson/litestream/releases/download/v0.3.13/litestream-v0.3.13-linux-amd64.tar.gz /tmp/litestream.tar.gz
-RUN tar -C /usr/local/bin -xzf /tmp/litestream.tar.gz
-
 # Copy the entire project directory into the Apache document root
 COPY . /var/www/html/
-
-# Copy Litestream configuration
-COPY litestream.yml /etc/litestream.yml
 
 # Set the working directory
 WORKDIR /var/www/html
