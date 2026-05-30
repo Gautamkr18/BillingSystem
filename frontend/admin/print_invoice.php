@@ -60,6 +60,9 @@ foreach ($items as $idx => $item) {
     $items_list_text .= "📦 " . ($idx + 1) . ". " . $item['product_name'] . " (" . $item['quantity'] . " " . $item['unit'] . ")\n";
 }
 
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+$base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+
 $whatsapp_text = "🌟 *INVOICE GENERATED - KRISHNA HARDWARE* 🌟\n\n"
                . "Dear *" . $invoice['name'] . "*,\n\n"
                . "Thank you for shopping with us! Your tax invoice is ready. Please find the details below:\n\n"
@@ -70,7 +73,7 @@ $whatsapp_text = "🌟 *INVOICE GENERATED - KRISHNA HARDWARE* 🌟\n\n"
                . "🛒 *Items Purchased:*\n"
                . $items_list_text . "\n"
                . "🔗 *View / Print Digital Invoice:*\n"
-               . "http://localhost/billing-system/frontend/admin/print_invoice.php?id=" . $invoice_id . "\n\n";
+               . $base_url . "/print_invoice.php?id=" . $invoice_id . "\n\n";
 
 if ($invoice['payment_status'] == 'Pending' || $invoice['payment_status'] == 'Partial') {
     $upi_deep_link = "upi://pay?pa=" . STORE_UPI_ID . "&pn=" . rawurlencode(STORE_MERCHANT_NAME) . "&am=" . number_format($remaining_due, 2, '.', '') . "&cu=INR&tn=Inv-" . str_pad($invoice_id, 6, "0", STR_PAD_LEFT);
