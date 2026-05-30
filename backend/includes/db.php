@@ -11,7 +11,11 @@
  * db_num_rows(), db_escape(), db_insert_id(), db_error(), db_close()
  */
 
-define('DB_MODE', getenv('DATABASE_URL') ? 'pgsql' : 'sqlite');
+$env_db_url = getenv('DATABASE_URL');
+if (empty($env_db_url) && isset($_ENV['DATABASE_URL'])) $env_db_url = $_ENV['DATABASE_URL'];
+if (empty($env_db_url) && isset($_SERVER['DATABASE_URL'])) $env_db_url = $_SERVER['DATABASE_URL'];
+
+define('DB_MODE', !empty($env_db_url) ? 'pgsql' : 'sqlite');
 
 // ============================================================
 // UNIFIED RESULT WRAPPER (shared by both SQLite and PostgreSQL)
@@ -73,7 +77,11 @@ function db_connect($host = null, $user = null, $pass = null, $db_name = null, $
 
     if (DB_MODE === 'pgsql') {
         // ── PostgreSQL (Render production) ──────────────────
-        $db_url = getenv('DATABASE_URL');
+        global $env_db_url;
+        $db_url = $env_db_url;
+        if (empty($db_url)) {
+             $db_url = getenv('DATABASE_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_SERVER['DATABASE_URL'] ?? ''));
+        }
         try {
             $url = parse_url($db_url);
             $dsn = sprintf(
