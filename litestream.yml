@@ -10,6 +10,6 @@ dbs:
         # Sync every hour to stay comfortably within Cloudflare R2 free tier limits
         # (1M Class A operations/month free — 1h interval uses ~720 ops/month)
         sync-interval: 1h
-        # Keep snapshots for 7 days to allow point-in-time recovery
-        retention: 7d
+        # Keep snapshots for 7 days (168 hours) to allow point-in-time recovery
+        retention: 168h
         retention-check-interval: 24h

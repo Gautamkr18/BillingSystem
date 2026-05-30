@@ -7,7 +7,7 @@ mkdir -p /var/www/html/uploads /var/www/html/database
 # Restore database if using SQLite and replica exists
 DB_PATH="/var/www/html/database/billing_system.sqlite"
 echo "Attempting to restore database from Litestream if replica exists..."
-litestream restore -v -if-replica-exists -config /etc/litestream.yml "$DB_PATH" || echo "Warning: Litestream restore failed or skipped (non-fatal, continuing...)"
+litestream restore -if-replica-exists -config /etc/litestream.yml "$DB_PATH" || echo "Warning: Litestream restore failed or skipped (non-fatal, continuing...)"
 
 # Run database migrations BEFORE fixing permissions
 echo "Running database migrations..."
