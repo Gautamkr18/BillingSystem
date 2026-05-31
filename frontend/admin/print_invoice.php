@@ -60,20 +60,15 @@ foreach ($items as $idx => $item) {
     $items_list_text .= "📦 " . ($idx + 1) . ". " . $item['product_name'] . " (" . $item['quantity'] . " " . $item['unit'] . ")\n";
 }
 
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-$base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
-
 $whatsapp_text = "🌟 *INVOICE GENERATED - KRISHNA HARDWARE* 🌟\n\n"
                . "Dear *" . $invoice['name'] . "*,\n\n"
                . "Thank you for shopping with us! Your tax invoice is ready. Please find the details below:\n\n"
                . "📄 *Invoice Details:*\n"
                . "🔹 *Invoice No:* #" . str_pad($invoice_id, 6, "0", STR_PAD_LEFT) . "\n"
-               . "📅 *Date:* " . date('d M Y h:i A', strtotime($invoice['invoice_date'])) . "\n"
+               . "📅 *Date:* " . format_local_date('d M Y h:i A', $invoice['invoice_date']) . "\n"
                . "💰 *Total Value:* ₹" . number_format($invoice['grand_total'], 2) . " (" . $invoice['payment_status'] . " via " . $invoice['payment_method'] . ")\n\n"
                . "🛒 *Items Purchased:*\n"
-               . $items_list_text . "\n"
-               . "🔗 *View / Print Digital Invoice:*\n"
-               . $base_url . "/print_invoice.php?id=" . $invoice_id . "\n\n";
+               . $items_list_text . "\n\n";
 
 if ($invoice['payment_status'] == 'Pending' || $invoice['payment_status'] == 'Partial') {
     $upi_deep_link = "upi://pay?pa=" . STORE_UPI_ID . "&pn=" . rawurlencode(STORE_MERCHANT_NAME) . "&am=" . number_format($remaining_due, 2, '.', '') . "&cu=INR&tn=Inv-" . str_pad($invoice_id, 6, "0", STR_PAD_LEFT);
@@ -438,7 +433,7 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
         
         <div class="bill-details">
             <p><strong>Invoice No:</strong> <?php echo str_pad($invoice_id, 6, "0", STR_PAD_LEFT); ?></p>
-            <p><strong>Date:</strong> <?php echo date('d-m-Y h:i A', strtotime($invoice['invoice_date'])); ?></p>
+            <p><strong>Date:</strong> <?php echo format_local_date('d-m-Y h:i A', $invoice['invoice_date']); ?></p>
             <p><strong>Customer:</strong> <?php echo htmlspecialchars($invoice['name']); ?></p>
             <?php if(!empty($invoice['phone'])): ?>
                 <p><strong>Phone:</strong> <?php echo htmlspecialchars($invoice['phone']); ?></p>
@@ -561,7 +556,7 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
                 </span>
                 <p style="margin: 10px 0 0 0; font-size: 0.9rem; color:#4B5563;">
                     <strong>Invoice No:</strong> <?php echo str_pad($invoice_id, 6, "0", STR_PAD_LEFT); ?><br>
-                    <strong>Date:</strong> <?php echo date('d M Y h:i A', strtotime($invoice['invoice_date'])); ?>
+                    <strong>Date:</strong> <?php echo format_local_date('d M Y h:i A', $invoice['invoice_date']); ?>
                 </p>
             </div>
         </div>
@@ -648,7 +643,7 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
                         </div>
                         <div class="paid-stamp-details">
                             via <?php echo htmlspecialchars($invoice['payment_method']); ?><br>
-                            on <?php echo date('d-M-Y', strtotime($invoice['invoice_date'])); ?>
+                            on <?php echo format_local_date('d-M-Y', $invoice['invoice_date']); ?>
                         </div>
                     </div>
                 <?php else: ?>

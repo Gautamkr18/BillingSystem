@@ -38,7 +38,7 @@ if (isset($_GET['download_gstr1'])) {
             "inv" => [
                 [
                     "inum" => str_pad($row['invoice_id'], 6, "0", STR_PAD_LEFT),
-                    "idt" => date('d-m-Y', strtotime($row['invoice_date'])),
+                    "idt" => format_local_date('d-m-Y', $row['invoice_date']),
                     "val" => floatval($row['grand_total']),
                     "pos" => "20", // Jharkhand code
                     "rchrg" => "N",

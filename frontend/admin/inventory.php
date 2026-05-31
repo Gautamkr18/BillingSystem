@@ -335,7 +335,7 @@ if (isset($_POST['delete_all_products'])) {
                 }
             ?>
             <tr>
-                <td style="color:var(--text-muted); font-size:0.9rem;"><?php echo date('d M Y h:i A', strtotime($row['created_at'])); ?></td>
+                <td style="color:var(--text-muted); font-size:0.9rem;"><?php echo format_local_date('d M Y h:i A', $row['created_at']); ?></td>
                 <td style="font-weight:bold; color:var(--text-main);"><?php echo htmlspecialchars($row['product_name']); ?></td>
                 <td style="font-weight:bold; color: <?php echo $row['quantity'] > 0 ? 'var(--secondary-color)' : 'var(--error)'; ?>;">
                     <?php echo $row['quantity'] > 0 ? '+' : ''; ?><?php echo $row['quantity']; ?> <?php echo htmlspecialchars($row['unit']); ?>

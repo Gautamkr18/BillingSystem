@@ -11,6 +11,11 @@ function isAdmin() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 }
 
+function format_local_date($format, $utc_date_string) {
+    if (!$utc_date_string) return '';
+    return date($format, strtotime($utc_date_string . ' UTC'));
+}
+
 function isCashier() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'cashier';
 }

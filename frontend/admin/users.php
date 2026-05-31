@@ -355,7 +355,7 @@ include '../includes/header.php';
                 while ($log = db_fetch_assoc($logs)) {
             ?>
             <tr>
-                <td style="color: var(--text-muted); font-size: 0.9rem;"><?php echo date('d M Y h:i A', strtotime($log['timestamp'])); ?></td>
+                <td style="color: var(--text-muted); font-size: 0.9rem;"><?php echo format_local_date('d M Y h:i A', $log['timestamp']); ?></td>
                 <td style="font-weight: 600;"><?php echo htmlspecialchars($log['username']); ?></td>
                 <td>
                     <span class="badge" style="padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #E5E7EB; color: #374151;">

@@ -513,7 +513,7 @@ function submitInvoiceForm(event) {
             ?>
             <tr>
                 <td style="font-weight:bold; font-family:monospace;"><?php echo str_pad($row['invoice_id'], 6, "0", STR_PAD_LEFT); ?></td>
-                <td><div style="font-weight:600;"><?php echo htmlspecialchars($row['name']); ?></div><span style="font-size:0.75rem; color:var(--text-muted);"><?php echo date('d M Y h:i A', strtotime($row['invoice_date'])); ?></span></td>
+                <td><div style="font-weight:600;"><?php echo htmlspecialchars($row['name']); ?></div><span style="font-size:0.75rem; color:var(--text-muted);"><?php echo format_local_date('d M Y h:i A', $row['invoice_date']); ?></span></td>
                 <td>₹<?php echo number_format($row['subtotal'], 2); ?></td>
                 <td>
                     <div style="font-size:0.85rem;">₹<?php echo number_format($row['gst_total'], 2); ?></div>

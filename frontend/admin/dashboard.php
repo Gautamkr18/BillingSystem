@@ -272,7 +272,7 @@ new Chart(weeklyCtx, {
             <tr>
                 <td style="font-weight:bold; font-family:monospace;"><?php echo str_pad($row['invoice_id'], 6, "0", STR_PAD_LEFT); ?></td>
                 <td style="font-weight:600; color:var(--text-main);"><?php echo htmlspecialchars($row['name']); ?></td>
-                <td style="color:var(--text-muted); font-size:0.9rem;"><?php echo date('d M Y, h:i A', strtotime($row['invoice_date'])); ?></td>
+                <td style="color:var(--text-muted); font-size:0.9rem;"><?php echo format_local_date('d M Y, h:i A', $row['invoice_date']); ?></td>
                 <td>
                     <span class="badge" style="padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #E5E7EB; color: #374151;">
                         <?php echo $row['payment_method']; ?>

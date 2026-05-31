@@ -119,7 +119,7 @@ if(isset($_POST['record_payment'])){
                 while($row = db_fetch_assoc($res)) {
                 ?>
                 <tr>
-                    <td style="color:var(--text-muted); font-size:0.9rem;"><?php echo date('d M Y h:i A', strtotime($row['created_at'])); ?></td>
+                    <td style="color:var(--text-muted); font-size:0.9rem;"><?php echo format_local_date('d M Y h:i A', $row['created_at']); ?></td>
                     <td>
                         <?php if(!empty($row['invoice_id'])): ?>
                             <a href="print_invoice.php?id=<?php echo $row['invoice_id']; ?>" target="_blank" style="color:var(--primary-color); font-weight:bold; text-decoration:none;">
