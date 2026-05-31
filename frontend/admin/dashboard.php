@@ -25,9 +25,14 @@ $month_res = db_fetch_assoc(db_query($conn, "SELECT SUM(grand_total) as val FROM
 $month_revenue = (is_array($month_res) && isset($month_res['val'])) ? floatval($month_res['val']) : 0.00;
 
 // 4. Counts
-$total_products = db_num_rows(db_query($conn,"SELECT * FROM products"));
-$total_customers = db_num_rows(db_query($conn,"SELECT * FROM customers"));
-$total_invoices = db_num_rows(db_query($conn,"SELECT * FROM invoices"));
+$prod_res = db_fetch_assoc(db_query($conn,"SELECT COUNT(*) as c FROM products"));
+$total_products = $prod_res ? intval($prod_res['c']) : 0;
+
+$cust_res = db_fetch_assoc(db_query($conn,"SELECT COUNT(*) as c FROM customers"));
+$total_customers = $cust_res ? intval($cust_res['c']) : 0;
+
+$inv_res = db_fetch_assoc(db_query($conn,"SELECT COUNT(*) as c FROM invoices"));
+$total_invoices = $inv_res ? intval($inv_res['c']) : 0;
 
 // 5. Low Stock Alert Count
 $low_stock_res = db_fetch_assoc(db_query($conn, "SELECT COUNT(*) as count FROM products WHERE stock_quantity <= low_stock_threshold"));

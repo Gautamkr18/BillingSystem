@@ -273,6 +273,13 @@ db_query($conn, "CREATE TABLE IF NOT EXISTS customer_ledger (
 )");
 echo "Ensured 'customer_ledger' table exists.<br>";
 
+// 10. Add performance indexes
+db_query($conn, "CREATE INDEX IF NOT EXISTS idx_invoices_customer_id ON invoices(customer_id)");
+db_query($conn, "CREATE INDEX IF NOT EXISTS idx_invoices_invoice_date ON invoices(invoice_date)");
+db_query($conn, "CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items(invoice_id)");
+db_query($conn, "CREATE INDEX IF NOT EXISTS idx_invoice_items_product_id ON invoice_items(product_id)");
+echo "Ensured performance indexes exist.<br>";
+
 echo "<h3>Database Migration Completed Successfully!</h3>";
 echo "<a href='frontend/admin/dashboard.php'>Go to Dashboard</a>";
 ?>

@@ -573,12 +573,12 @@ function db_reset_empty_sequences($conn) {
     }
 }
 
-// Automatically reset empty table auto-increment sequences (SQLite only)
-db_reset_empty_sequences($conn);
-
 // One-time deduplication & healing on first startup
 $lock_file = dirname(dirname(__DIR__)) . '/database/dedup.lock';
 if (!file_exists($lock_file)) {
+    // Automatically reset empty table auto-increment sequences (SQLite only)
+    db_reset_empty_sequences($conn);
+    
     db_deduplicate_invoices($conn);
     db_deduplicate_customers($conn);
     @file_put_contents($lock_file, 'healed');
