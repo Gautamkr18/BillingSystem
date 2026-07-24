@@ -4,11 +4,15 @@ include '../backend/includes/db.php';
 
 if(isset($_POST['login'])){
 
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = MD5($_POST['password']);
 
-    $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
-    $result = db_query($conn, $query);
+    // Use prepared statements for security and PostgreSQL case-insensitive comparison
+    $query = "SELECT * FROM users WHERE LOWER(username) = LOWER(:username) AND password = :password";
+    $result = db_query_prepared($conn, $query, [
+        ':username' => $username,
+        ':password' => $password
+    ]);
 
     if(db_num_rows($result) > 0){
         $user = db_fetch_assoc($result);
@@ -26,7 +30,9 @@ if(isset($_POST['login'])){
         $error = "Invalid Username or Password";
         
         // Debugging logs for browser console (F12)
-        $user_check = db_query($conn, "SELECT * FROM users WHERE username='$username'");
+        $user_check = db_query_prepared($conn, "SELECT * FROM users WHERE LOWER(username) = LOWER(:username)", [
+            ':username' => $username
+        ]);
         if (db_num_rows($user_check) > 0) {
             $user_data = db_fetch_assoc($user_check);
             $db_pass = $user_data['password'];
