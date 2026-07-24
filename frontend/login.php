@@ -23,24 +23,15 @@ if(isset($_POST['login'])){
         
         $user_id = $user['id'];
         $role = $_SESSION['role'];
-        db_query($conn, "INSERT INTO activity_logs (user_id, username, action, details) VALUES ('$user_id', '$username', 'Login', 'User logged in as $role')");
+        
+        db_query_prepared($conn, 
+            "INSERT INTO activity_logs (user_id, username, action, details) VALUES (:uid, :uname, 'Login', :details)", 
+            [':uid' => $user_id, ':uname' => $username, ':details' => "User logged in as $role"]
+        );
         
         header("Location: admin/dashboard.php");
     } else {
         $error = "Invalid Username or Password";
-        
-        // Debugging logs for browser console (F12)
-        $user_check = db_query_prepared($conn, "SELECT * FROM users WHERE LOWER(username) = LOWER(:username)", [
-            ':username' => $username
-        ]);
-        if (db_num_rows($user_check) > 0) {
-            $user_data = db_fetch_assoc($user_check);
-            $db_pass = $user_data['password'];
-            $debug_msg = "User exists. Password mismatch! Submitted hash: $password | Database hash: $db_pass";
-        } else {
-            $debug_msg = "Username '$username' does not exist in the database.";
-        }
-        $_SESSION['login_debug'] = $debug_msg;
     }
 }
 ?>
@@ -90,12 +81,5 @@ if(isset($_POST['login'])){
         </div>
     </div>
 
-    <?php
-    if (isset($_SESSION['login_debug'])) {
-        $msg = addslashes($_SESSION['login_debug']);
-        echo "<script>console.warn('Login Debug: ' + '$msg');</script>";
-        unset($_SESSION['login_debug']);
-    }
-    ?>
 </body>
 </html>
