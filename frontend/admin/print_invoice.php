@@ -34,10 +34,6 @@ while ($it = db_fetch_assoc($items_result)) {
 
 
 
-// UPI Payment configuration constants
-define('STORE_UPI_ID', 'gautamgupta35@ybl'); // Merchant UPI ID
-define('STORE_MERCHANT_NAME', 'Krishna Hardware'); // Merchant Name
-
 // Build standard UPI deep link payload using remaining due amount
 $remaining_due = max(0, $invoice['grand_total'] - $invoice['amount_paid']);
 $upi_payload = "upi://pay?pa=" . urlencode(STORE_UPI_ID) . 
@@ -60,7 +56,7 @@ foreach ($items as $idx => $item) {
     $items_list_text .= "📦 " . ($idx + 1) . ". " . $item['product_name'] . " (" . $item['quantity'] . " " . $item['unit'] . ")\n";
 }
 
-$whatsapp_text = "🌟 *INVOICE GENERATED - KRISHNA HARDWARE* 🌟\n\n"
+$whatsapp_text = "🌟 *INVOICE GENERATED - " . strtoupper(STORE_NAME) . "* 🌟\n\n"
                . "Dear *" . $invoice['name'] . "*,\n\n"
                . "Thank you for shopping with us! Your tax invoice is ready. Please find the details below:\n\n"
                . "📄 *Invoice Details:*\n"
@@ -77,8 +73,8 @@ if ($invoice['payment_status'] == 'Pending' || $invoice['payment_status'] == 'Pa
                     . "⚡ *Instant UPI Payment Link (Click to Pay):*\n" . $upi_deep_link . "\n\n";
 }
 
-$whatsapp_text .= "We appreciate your business! If you have any queries, contact support@krishnahardware.com.\n\n"
-               . "✨ *Krishna Hardware*";
+$whatsapp_text .= "We appreciate your business! If you have any queries, contact " . STORE_EMAIL . ".\n\n"
+               . "✨ *" . STORE_NAME . "*";
 
 $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&text=" . rawurlencode($whatsapp_text);
 ?>
@@ -426,9 +422,9 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
     <?php if ($format == 'thermal'): ?>
     <div class="receipt-box">
         <div class="header">
-            <h2>KRISHNA HARDWARE</h2>
-            <p>ICHAK BAZAR HAZARIBAGH, JHARKHAND</p>
-            <p>Phone: 7549117172 | GSTIN: 20ABCDE1234F1Z5</p>
+            <h2><?php echo htmlspecialchars(STORE_NAME); ?></h2>
+            <p><?php echo htmlspecialchars(STORE_ADDRESS); ?></p>
+            <p>Phone: <?php echo htmlspecialchars(STORE_PHONE); ?> | GSTIN: <?php echo htmlspecialchars(STORE_GSTIN); ?></p>
         </div>
         
         <div class="bill-details">
@@ -533,7 +529,7 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
             
             <br>
             <p>*** THANK YOU FOR SHOPPING! ***</p>
-            <p>Krishna Hardware, Hazaribagh</p>
+            <p><?php echo htmlspecialchars(STORE_NAME); ?></p>
         </div>
     </div>
     
@@ -542,11 +538,11 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
     <div class="invoice-box">
         <div class="header">
             <div>
-                <h1>KRISHNA HARDWARE</h1>
+                <h1><?php echo htmlspecialchars(STORE_NAME); ?></h1>
                 <p style="margin: 5px 0 0 0; line-height: 1.4; color: #4B5563;">
-                    ICHAK BAZAR HAZARIBAGH, JHARKHAND<br>
-                    <strong>Phone:</strong> 7549117172 | <strong>Email:</strong> support@krishnahardware.com<br>
-                    <strong>GSTIN:</strong> 20ABCDE1234F1Z5
+                    <?php echo htmlspecialchars(STORE_ADDRESS); ?><br>
+                    <strong>Phone:</strong> <?php echo htmlspecialchars(STORE_PHONE); ?> | <strong>Email:</strong> <?php echo htmlspecialchars(STORE_EMAIL); ?><br>
+                    <strong>GSTIN:</strong> <?php echo htmlspecialchars(STORE_GSTIN); ?>
                 </p>
             </div>
             <div style="text-align: right;">
@@ -723,8 +719,8 @@ $whatsapp_url = "https://api.whatsapp.com/send?phone=" . $customer_phone . "&tex
         </div>
         
         <div style="text-align: center; border-top: 1px solid #E5E7EB; margin-top: 40px; padding-top: 20px; color:#6B7280; font-size:0.85rem;">
-            Thank you for shopping with Krishna Hardware!<br>
-            For any queries, contact support@krishnahardware.com
+            Thank you for shopping with <?php echo htmlspecialchars(STORE_NAME); ?>!<br>
+            For any queries, contact <?php echo htmlspecialchars(STORE_EMAIL); ?>
         </div>
     </div>
     <?php endif; ?>
