@@ -98,7 +98,7 @@ function db_connect($host = null, $user = null, $pass = null, $db_name = null, $
             ]);
         } catch (Exception $e) {
             $conn->error = $e->getMessage();
-            die("Connection Error: " . $e->getMessage());
+            return false;
         }
     } else {
         // ── SQLite (local XAMPP development) ────────────────
