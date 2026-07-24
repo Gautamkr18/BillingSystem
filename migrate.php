@@ -95,9 +95,7 @@ if (db_num_rows($cashier_check) == 0) {
     echo "Inserted default cashier user ('cashier' / 'cashier123').<br>";
 }
 
-// Ensure existing staff duplicates are healed/merged before applying unique indexes
-db_deduplicate_users($conn);
-echo "Deduplicated any existing duplicate staff members.<br>";
+
 
 // Enforce database-level uniqueness for usernames using partial SQLite indexes
 db_query($conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username) WHERE username IS NOT NULL AND username != ''");
@@ -113,9 +111,7 @@ if (!columnExists($conn, 'customers', 'credit_balance')) {
     echo "Added 'credit_balance' to 'customers' table.<br>";
 }
 
-// Ensure existing customer duplicates are healed/merged before applying unique indexes
-db_deduplicate_customers($conn);
-echo "Deduplicated any existing duplicate customers.<br>";
+
 
 // Enforce database-level uniqueness for phone and email using partial SQLite indexes
 db_query($conn, "CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone) WHERE phone IS NOT NULL AND phone != ''");
@@ -164,9 +160,7 @@ if (!columnExists($conn, 'products', 'supplier')) {
     echo "Added 'supplier' to 'products' table.<br>";
 }
 
-// Cleanup any duplicate products (keeping only the unique ones by name)
-db_deduplicate_products($conn);
-echo "Deduplicated any duplicate products in 'products' table.<br>";
+
 
 // 4. Upgrade `invoices` table
 if (!columnExists($conn, 'invoices', 'discount')) {
