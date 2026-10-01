@@ -2,6 +2,7 @@
 
 A modern, robust, and feature-rich **Billing and Inventory Management System** built with PHP and MySQL. Designed for retail, electrical, and small-to-medium businesses to seamlessly manage sales, track inventory, compute GST taxes, log business expenses, and monitor customer ledgers.
 
+live : https://billing-system-njcj.onrender.com
 ---
 
 ## ✨ Key Features
@@ -74,6 +75,8 @@ This uses Render's **Blueprints** (`render.yaml`) to automatically spin up your 
 7. Once successfully deployed, navigate to the Web Service URL:
    `https://<your-app-name>.onrender.com/database/migrate.php`
    This will automatically initialize your SQLite database inside the persistent disk!
+
+   db on : https://console.neon.tech/app/projects/solitary-wind-88037245/branches/br-winter-dew-b4t4vdz7?database=neondb..
 
 ---
 
